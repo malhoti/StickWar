@@ -6,7 +6,7 @@ public enum State
 {
     Retreat,
     Defend,
-    Attack
+    Advance
 }
 
 public class TeamVariables : MonoBehaviour

@@ -141,17 +141,18 @@ MonoBehaviour:
   tv: {fileID: 0}
   rb: {fileID: 7430478760736519990}
   anim: {fileID: 7643379814079239810}
-  storageBar: {fileID: 5755375602753235419}
   moveSpeed: 8
+  health: 0
+  targetLocation: {x: 0, y: 0}
+  flip: 0
+  storageBar: {fileID: 5755375602753235419}
   maxStorage: 4
   storage: 0
-  targetGold: {fileID: 0}
-  targetLocation: {x: 0, y: 0}
-  miningPosition: 0
   team: 0
+  targetGold: {fileID: 0}
+  miningPosition: 0
   isMining: 0
   isUnloading: 0
-  flip: 0
 --- !u!50 &7430478760736519990
 Rigidbody2D:
   serializedVersion: 4

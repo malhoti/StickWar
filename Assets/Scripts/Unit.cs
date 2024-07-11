@@ -30,7 +30,7 @@ public class Unit : MonoBehaviour
     protected virtual void Die()
     {
         // Handle death logic here
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 }
    

@@ -42,6 +42,7 @@ public class Miner : Unit
         anim = GetComponentInChildren<Animator>();
         FindNextTask();
         anim.Play("MinerWalk");
+        targetLocation = transform.position;
     }
 
     // Update is called once per frame
@@ -53,7 +54,7 @@ public class Miner : Unit
                 Retreat();break;
             case State.Defend:
                 Gather(); break;
-            case State.Attack:
+            case State.Advance:
                 Gather(); break;
         }
         
@@ -387,7 +388,7 @@ public class Miner : Unit
 
             if (storage >= maxStorage)
             {
-                break;
+                yield break;
             }
 
             if (targetGold == initialTargetGold)

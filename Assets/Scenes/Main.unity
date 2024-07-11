@@ -1020,7 +1020,7 @@ Transform:
   m_GameObject: {fileID: 264526637}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -43.03, y: -3, z: -10.831799}
+  m_LocalPosition: {x: 43, y: 0, z: -10.831799}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1042,8 +1042,9 @@ MonoBehaviour:
   gv: {fileID: 1901931861}
   tv: {fileID: 0}
   maxUnits: 50
-  horizontal: 8.37
-  vertical: 16.22
+  horizontal: 8
+  vertical: 26
+  testOutSpawn: 0
 --- !u!1 &277975043
 GameObject:
   m_ObjectHideFlags: 0
@@ -2642,7 +2643,7 @@ Transform:
   m_GameObject: {fileID: 892571321}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -29, y: -4, z: 0}
+  m_LocalPosition: {x: -58.1, y: 2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3175,9 +3176,10 @@ MonoBehaviour:
   armySoldier: {fileID: 8542004769833073021, guid: 62ae4eb1574e7934dabfece3445d9d50, type: 3}
   gv: {fileID: 1901931861}
   tv: {fileID: 0}
-  maxUnits: 50
-  horizontal: 8.37
-  vertical: 16.22
+  maxUnits: 500
+  horizontal: 8
+  vertical: 26
+  testOutSpawn: 0
 --- !u!4 &985209896
 Transform:
   m_ObjectHideFlags: 0
@@ -3187,7 +3189,7 @@ Transform:
   m_GameObject: {fileID: 985209894}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 43.03, y: -3, z: -10.831799}
+  m_LocalPosition: {x: -43, y: 0, z: -10.831799}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4262,7 +4264,7 @@ Transform:
   m_GameObject: {fileID: 1193824629}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -26, y: -7, z: -10.382081}
+  m_LocalPosition: {x: 0, y: 2, z: -10.382081}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6054,8 +6056,8 @@ MonoBehaviour:
   miner: {fileID: 3673222441977379106, guid: 2fe2bff0e6781f04994da4505dc9279f, type: 3}
   swordsmen: {fileID: 8542004769833073021, guid: 62ae4eb1574e7934dabfece3445d9d50, type: 3}
   maxUnitsPerColumn: 3
-  horizontalSpacing: 3
-  verticalSpacing: 5
+  horizontalSpacing: 4
+  verticalSpacing: 3
 --- !u!4 &1901931862
 Transform:
   m_ObjectHideFlags: 0
@@ -6416,7 +6418,7 @@ Transform:
   m_GameObject: {fileID: 2086090617}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 29, y: -4, z: 0}
+  m_LocalPosition: {x: 37, y: 2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -82,12 +82,12 @@ public class UI : MonoBehaviour
 
     void Attack1Pressed()
     {
-        tv1.state = State.Attack;
+        tv1.state = State.Advance;
     }
 
     void Attack2Pressed()
     {
-        tv2.state = State.Attack;
+        tv2.state = State.Advance;
     }
     void Miner1Pressed()
     {

@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 8189597579981727730}
   - component: {fileID: 8967434370465183918}
   - component: {fileID: 2936739114589615664}
+  - component: {fileID: 2071475854204220183}
   - component: {fileID: 4159240133864503436}
   - component: {fileID: 8207260984884763908}
-  - component: {fileID: 7854253733614268386}
+  - component: {fileID: -5582693546543107873}
   m_Layer: 0
   m_Name: Swordsman
   m_TagString: Untagged
@@ -105,12 +106,33 @@ MonoBehaviour:
   rb: {fileID: 0}
   anim: {fileID: 0}
   moveSpeed: 10
-  health: 0
+  health: 10
   targetLocation: {x: 0, y: 0}
   flip: 0
-  attackDamage: 0
+  attackDamage: 3
+  enemyDetector: {fileID: 0}
+  targetUnit: {fileID: 0}
+  targetUnits: []
+  isAttacking: 0
   index: 0
   row: 0
+--- !u!114 &2071475854204220183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8542004769833073021}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d4d78dd52753364aa19e2017ff916ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  detectionWidth: 32.15
+  detectionHeight: 23.53
+  attackWidth: 3.94
+  attackHeight: 0.46
+  tv: {fileID: 0}
 --- !u!50 &4159240133864503436
 Rigidbody2D:
   serializedVersion: 4
@@ -159,7 +181,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!61 &7854253733614268386
+--- !u!61 &-5582693546543107873
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -188,7 +210,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -202,5 +224,5 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 47.109016, y: 32.046036}
+  m_Size: {x: 1.5801373, y: 0.46}
   m_EdgeRadius: 0

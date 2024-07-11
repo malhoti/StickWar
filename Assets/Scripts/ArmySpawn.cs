@@ -8,10 +8,12 @@ public class ArmySpawn : MonoBehaviour
     public GlobalVariables gv;
     public TeamVariables tv;
     public int maxUnits = 20;
+
+    
     public float horizontal;
     public float vertical;
 
-    
+    public bool testOutSpawn;
     // Start is called before the first frame update
 
 
@@ -19,14 +21,32 @@ public class ArmySpawn : MonoBehaviour
 
     void Start()
     {
-       tv = GetComponentInParent<TeamVariables>(); 
-
+        tv = GetComponentInParent<TeamVariables>();
+        if(testOutSpawn)
+        testSpawnUnit();
     }
 
     // Update is called once per frame
     void Update()
     {
 
+    }
+
+    void testSpawnUnit()
+    {
+        float halfHeight = vertical / 2;
+        float halfWidth = horizontal / 2;
+        int currentUnits = 0;
+        while (currentUnits < maxUnits)
+        {
+            Vector2 spawnPosition = new Vector2(
+                Random.Range(transform.position.x - halfWidth, transform.position.x + halfWidth),
+                Random.Range(transform.position.y - halfHeight, transform.position.y + halfHeight));
+
+            GameObject spawnedUnit = Instantiate(armySoldier, spawnPosition, Quaternion.identity, tv.transform);
+            currentUnits++;
+            tv.frontLineUnits.Add(spawnedUnit);
+        }
     }
 
     public void SpawnUnit(GameObject unit)
