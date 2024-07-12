@@ -12,6 +12,7 @@ public class GlobalVariables : MonoBehaviour
     [Header("Army Soldiers")]
     public GameObject miner;
     public GameObject swordsmen;
+    public GameObject archer;
 
     [Header("Combat Settings")]
     public int maxUnitsPerColumn;

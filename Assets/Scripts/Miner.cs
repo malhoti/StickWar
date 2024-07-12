@@ -42,7 +42,7 @@ public class Miner : Unit
         anim = GetComponentInChildren<Animator>();
         FindNextTask();
         anim.Play("MinerWalk");
-        targetLocation = transform.position;
+        //targetLocation = transform.position;
     }
 
     // Update is called once per frame
@@ -420,7 +420,7 @@ public class Miner : Unit
     protected override void Die()
     {
         tv.gathererUnits.Remove(gameObject);
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 
     // Testing functions

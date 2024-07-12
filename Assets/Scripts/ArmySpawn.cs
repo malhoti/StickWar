@@ -70,6 +70,10 @@ public class ArmySpawn : MonoBehaviour
             {
                 tv.frontLineUnits.Add(spawnedUnit);
             }
+            if (unit.GetComponent<Archer>() != null)
+            {
+                tv.rearLineUnits.Add(spawnedUnit);
+            }
 
 
         }

@@ -1,11 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.UIElements;
 
-public class Swordsman : Unit
+public class Archer : Unit
 {
     [Header("Unit Specific Attributes")]
 
@@ -16,28 +13,22 @@ public class Swordsman : Unit
 
     public bool isAttacking;
 
-
-
     [Header("Debugging")]
     public int index;
     public int row;
     bool isCoroutineRunning = false;
 
 
-
-
-
     // Start is called before the first frame update
     void Awake()
     {
-
         flip = false;
         gv = FindObjectOfType<GlobalVariables>().GetComponent<GlobalVariables>();
         rb = GetComponent<Rigidbody2D>();
         tv = GetComponentInParent<TeamVariables>();
         anim = GetComponentInChildren<Animator>();
-        
-        anim.Play("SwordsmanWalk");
+
+        anim.Play("ArcherWalk");
         targetLocation = transform.position;
         Variation();
     }
@@ -60,7 +51,6 @@ public class Swordsman : Unit
     {
         Vector2 direction = (targetLocation - (Vector2)transform.position).normalized;
 
-
         if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
         {
             GetComponent<SpriteRenderer>().flipX = flip;
@@ -77,7 +67,7 @@ public class Swordsman : Unit
 
             flip = true;
         }
-        anim.Play("SwordsmanWalk");
+        anim.Play("ArcherWalk");
         GetComponent<SpriteRenderer>().flipX = flip;
         rb.MovePosition(rb.position + direction * (moveSpeed * Time.fixedDeltaTime));
     }
@@ -95,21 +85,22 @@ public class Swordsman : Unit
         targetLocation = tv.retreatPos.transform.position;
         if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
         {
-            anim.Play("SwordsmanIdle");
+            anim.Play("ArcherIdle");
         }
     }
 
     public void GetPositionInFormation()
     {
-
-        index = tv.frontLineUnits.IndexOf(gameObject);
+        index = tv.rearLineUnits.IndexOf(gameObject);
         int maxUnitsPerColumn = gv.maxUnitsPerColumn;
         float horizontalSpacing = gv.horizontalSpacing;
         float verticalSpacing = gv.verticalSpacing;
         Vector2 startPos = tv.defendPos.position;
 
-
+        // how many columns does the front line take
+        int frontLineColumns = tv.frontLineUnits.Count % maxUnitsPerColumn ==0 ? (tv.frontLineUnits.Count / maxUnitsPerColumn) : (tv.frontLineUnits.Count / maxUnitsPerColumn)+1;
         int column = index / maxUnitsPerColumn;
+        
         int positionInColumn = index % maxUnitsPerColumn;
         if (positionInColumn % 2 == 0)
         {
@@ -119,11 +110,12 @@ public class Swordsman : Unit
         {
             row = -(positionInColumn / 2) - 1;
         }
-        int unitsInColumn = Mathf.Min(tv.frontLineUnits.Count - column * maxUnitsPerColumn, maxUnitsPerColumn);
+        int unitsInColumn = Mathf.Min(tv.rearLineUnits.Count - column * maxUnitsPerColumn, maxUnitsPerColumn);
         float yOffset = (unitsInColumn % 2 == 0) ? horizontalSpacing / 2 : 0;
         float y = row * horizontalSpacing + yOffset;
-        float x = (tv.team == 1) ? -column * verticalSpacing : column * verticalSpacing;
-        if (tv.state != State.Advance){
+        float x = (tv.team == 1) ? -(column+frontLineColumns) * verticalSpacing : (column + frontLineColumns) * verticalSpacing;
+        if (tv.state != State.Advance)
+        {
             targetLocation = new Vector2(startPos.x + x, startPos.y + y);
         }
         else
@@ -139,29 +131,27 @@ public class Swordsman : Unit
         // if swordsman is at the defend location
         if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
         {
-            anim.Play("SwordsmanIdle");
+            anim.Play("ArcherIdle");
             flip = (tv.team != 1);
         }
-        
-
-
     }
 
     public void Advance()
     {
-
         // when advancing, unless it is in the middle of attacking, it will always search for enemies, if it doesnt find any , march forward until it finds an enemy or the enemy tower
-        if (!isAttacking) { 
-        targetUnits = FindEnemies();
+        if (!isAttacking)
+        {
+            targetUnits = FindEnemies();
 
             if (targetUnits.Count <= 0)
             {
                 March();
                 return;
             }
-            
+
             DecideEnemy(targetUnits);
-            if (IsTargetWithinAttackRange(targetUnit)){
+            if (IsTargetWithinAttackRange(targetUnit))
+            {
                 targetLocation = transform.position; // if you are attacking stand still
                 isAttacking = true;
             }
@@ -171,14 +161,11 @@ public class Swordsman : Unit
             Attack();
         }
     }
-    
 
-    
 
     // When the Units are advancing they March forward
     void March()
     {
-       
         if (tv.team == 1)
         {
             if ((targetLocation.x - transform.position.x) < 1f)
@@ -195,25 +182,21 @@ public class Swordsman : Unit
                 GetPositionInFormation();
             }
         }
-        
 
-        
+
+
     }
 
-    
+
     /// <summary>
     /// Decide which enemy to attack from the list of targets, this will be different for each type of unit
     /// </summary>
     /// <param name="enemies"></param>
     public void DecideEnemy(List<Unit> enemies)
     {
-
         float closestdistance = Mathf.Infinity;
         targetUnit = null;
-
         targetLocation = Vector2.zero;
-
-
 
         foreach (Unit enemy in enemies)
         {
@@ -227,19 +210,13 @@ public class Swordsman : Unit
             }
 
         }
-        //if (targetUnit is Tower)
-        //{
-        //    targetLocation = targetUnit.towerBase;
-        //}
         targetLocation = targetUnit.transform.position;
-
-
     }
 
     void Attack()
     {
-
-        if (!isCoroutineRunning) { 
+        if (!isCoroutineRunning)
+        {
             StartCoroutine(AttackAnimation());
         }
     }
@@ -251,9 +228,9 @@ public class Swordsman : Unit
 
         while (isAttacking)
         {
-            anim.Play("SwordsmanAttack");
+            anim.Play("ArcherAttack");
             yield return new WaitForSeconds(1);
-            
+
             if (!gameObject.activeSelf)
             {
                 yield break;
@@ -263,13 +240,13 @@ public class Swordsman : Unit
                 if (targetUnit.gameObject.activeSelf)
                 {
                     targetUnit.TakeDamage(attackDamage);
-                    
+
                 }
                 else
                 {
 
                     isAttacking = false;
-                    anim.Play("SwordsmanWalk");
+                    anim.Play("ArcherWalk");
                 }
             }
         }
@@ -284,18 +261,10 @@ public class Swordsman : Unit
     }
     // Testing functions
     void HandleMovement()
-        {
-            float moveInput = Input.GetAxisRaw("Horizontal");
-            float moveInputV = Input.GetAxisRaw("Vertical");
-            rb.velocity = new Vector2(moveInput * moveSpeed, moveInputV * moveSpeed);
-        }
+    {
+        float moveInput = Input.GetAxisRaw("Horizontal");
+        float moveInputV = Input.GetAxisRaw("Vertical");
+        rb.velocity = new Vector2(moveInput * moveSpeed, moveInputV * moveSpeed);
+    }
 
-
-        //private void OnDrawGizmos()
-        //{
-        //    Gizmos.color = Color.green;
-        //    Gizmos.DrawWireCube(transform.position, new Vector3(detectionZone.size.x, detectionZone.size.y));
-        //}
-
-    
 }

@@ -30,6 +30,9 @@ public class UI : MonoBehaviour
     public Button swordsman1;
     public Button swordsman2;
 
+    public Button archer1;
+    public Button archer2;
+
     public Button moveToTeam1;
     public Button moveToTeam2;
     // Start is called before the first frame update
@@ -49,6 +52,9 @@ public class UI : MonoBehaviour
 
         swordsman1.onClick.AddListener(Swordsman1Pressed);  
         swordsman2.onClick.AddListener(Swordsman2Pressed);
+
+        archer1.onClick.AddListener(Archer1Pressed);
+        archer2.onClick.AddListener(Archer2Pressed);
 
         moveToTeam1.onClick.AddListener(MoveToTeam1Pressed);
         moveToTeam2.onClick.AddListener(MoveToTeam2Pressed);
@@ -112,6 +118,17 @@ public class UI : MonoBehaviour
     void Swordsman2Pressed()
     {
         tv2.spawn.SpawnUnit(gv.swordsmen);
+
+    }
+
+    void Archer1Pressed()
+    {
+        tv1.spawn.SpawnUnit(gv.archer);
+    }
+
+    void Archer2Pressed()
+    {
+        tv2.spawn.SpawnUnit(gv.archer);
 
     }
 
