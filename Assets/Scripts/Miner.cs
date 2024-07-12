@@ -20,7 +20,6 @@ public class Miner : Unit
     public int storage;
 
     [Header("Debugging")]
-    public int team;
     public Gold targetGold;
     public int miningPosition;   
     public bool isMining;
@@ -28,7 +27,7 @@ public class Miner : Unit
     
 
     // Start is called before the first frame update
-    void Start()
+     public  void Awake()
     {
         Variation();
         isMining = false;
@@ -41,12 +40,12 @@ public class Miner : Unit
 
         anim = GetComponentInChildren<Animator>();
         FindNextTask();
-        anim.Play("MinerWalk");
+        anim.Play("Walk");
         //targetLocation = transform.position;
     }
 
     // Update is called once per frame
-    void Update()
+    public void Update()
     {
         switch (tv.state)
         {
@@ -61,31 +60,9 @@ public class Miner : Unit
         storageBar.UpdateStorageBar(storage, maxStorage, flip);
     }
 
-    private void FixedUpdate()
-    {
-        Vector2 direction = (targetLocation - (Vector2)transform.position).normalized;
+    
 
-        // checks whether the miner is at the target location, 
-        if (Vector2.Distance(transform.position, targetLocation) < 0.1f)
-        {
-            GetComponent<SpriteRenderer>().flipX = flip;
-            return;
 
-        }
-        else if (direction.x > 0)
-        { // is moving  
-            flip = false;
-
-        }
-        else if (direction.x < 0)
-        {
-            flip = true;
-        }
-
-        anim.Play("MinerWalk");
-        GetComponent<SpriteRenderer>().flipX = flip;
-        rb.MovePosition(rb.position + direction * (moveSpeed * Time.fixedDeltaTime));
-    }
 
     public void Variation()
     {
@@ -189,9 +166,9 @@ public class Miner : Unit
             isUnloading = false;
         }
 
-        if (Vector2.Distance(transform.position, targetLocation) < 0.1f)
+        if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
         {
-            anim.Play("MinerIdle");
+            anim.Play("Idle");
             //flip = false;
         }
     }
@@ -208,8 +185,9 @@ public class Miner : Unit
         float distanceToUnloadPos = Vector2.Distance(currentPos, unloadPos);
 
 
-        if (distanceToTarget < 0.1f)
+        if (distanceToTarget < 0.2f)
         {
+            
             HandleAtTargetPosition(retreatPos, unloadPos);
         }
         else
@@ -301,7 +279,8 @@ public class Miner : Unit
     
     private void Mine()
     {
-        anim.Play("MinerMine");
+       
+        anim.Play("Mine");
         flip = (tv.team ==1) ?(miningPosition == 1):(miningPosition !=1) ;
 
         if (tv.team == 1)
@@ -338,7 +317,8 @@ public class Miner : Unit
     }
     private void Unload()
     {
-        anim.Play("MinerIdle");
+      
+        anim.Play("Idle");
 
         if (!isUnloading)
         {
@@ -401,7 +381,7 @@ public class Miner : Unit
                 else
                 {
                     isMining = false;
-                    anim.Play("MinerWalk");
+                    anim.Play("Walk");
                 }
             }
         }
@@ -410,7 +390,7 @@ public class Miner : Unit
     public IEnumerator UnloadAnimation()
     {
         yield return new WaitForSeconds(2);
-        if (Vector2.Distance(transform.position, (Vector2)tv.unloadPos.transform.position) < 0.1f) { 
+        if (Vector2.Distance(transform.position, (Vector2)tv.unloadPos.transform.position) < 0.2f) { 
             tv.gold += storage * gv.valuePerGold;
             storage = 0;
         }
@@ -419,8 +399,11 @@ public class Miner : Unit
 
     protected override void Die()
     {
+        alive = false;
+        targetLocation = transform.position;// stand where you are
         tv.gathererUnits.Remove(gameObject);
-        gameObject.SetActive(false);
+        StopAllCoroutines();
+        StartCoroutine(DeathAnimation());
     }
 
     // Testing functions
@@ -431,4 +414,10 @@ public class Miner : Unit
         rb.velocity = new Vector2(moveInput * moveSpeed, moveInputV * moveSpeed);
     }
 
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireCube(targetLocation, new Vector3(1, 1));
+       
+    }
 }

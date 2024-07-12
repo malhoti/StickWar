@@ -108,8 +108,9 @@ MonoBehaviour:
   health: 10
   targetLocation: {x: 0, y: 0}
   flip: 0
-  detectionWidth: 44.4
-  detectionHeight: 16.9
+  alive: 0
+  detectionWidth: 39.2
+  detectionHeight: 45
   detectionOffset: {x: 0, y: 0}
   attackWidth: 3.2
   attackHeight: 0.79
@@ -118,6 +119,7 @@ MonoBehaviour:
   targetUnit: {fileID: 0}
   targetUnits: []
   isAttacking: 0
+  isCoroutineRunning: 0
   index: 0
   row: 0
 --- !u!50 &4159240133864503436

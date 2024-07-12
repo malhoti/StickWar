@@ -17,6 +17,7 @@ public class Unit : MonoBehaviour
     [Header("States")]
     public Vector2 targetLocation;
     public bool flip;
+    public bool alive = true;
 
     [Header("Bounds")]
     public float detectionWidth;
@@ -27,6 +28,37 @@ public class Unit : MonoBehaviour
     public float attackWidth;
     public float attackHeight;
     public Vector2 attackOffset;
+
+
+    public virtual void Start()
+    {
+        alive = true;
+    }
+    public virtual void FixedUpdate()
+    {
+        Vector2 direction = (targetLocation - (Vector2)transform.position).normalized;
+
+
+        if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
+        {
+            GetComponent<SpriteRenderer>().flipX = flip;
+            return;
+        }
+        // is moving
+        else if (direction.x > 0)
+        {
+
+            flip = false;
+        }
+        else if (direction.x < 0)
+        {
+
+            flip = true;
+        }
+        anim.Play("Walk");
+        GetComponent<SpriteRenderer>().flipX = flip;
+        rb.MovePosition(rb.position + direction * (moveSpeed * Time.fixedDeltaTime));
+    }
     
 
     public virtual void TakeDamage(int damage)
@@ -34,22 +66,34 @@ public class Unit : MonoBehaviour
         health -= damage;
         if (health <= 0)
         {
+            
             Die();
         }
     }
 
     protected virtual void Die()
     {
-        // Handle death logic here
+        alive = false;
+        targetLocation = transform.position;// stand where you are
         gameObject.SetActive(false);
     }
 
 
+    public virtual IEnumerator DeathAnimation()
+    {
+        anim.Play("Dead");
+        yield return new WaitForSeconds(3);
+        Destroy(gameObject);
+    }
     
-
-    
-
    
+    
+
+
+
+
+
+
     /// <summary>
     /// This returns a list of Units that it detects
     /// </summary>
@@ -68,11 +112,13 @@ public class Unit : MonoBehaviour
             Unit enemy = collider.gameObject.GetComponent<Unit>();
             if (enemy != null)
             {
-                if (enemy.tv.team != tv.team)
-                {
-                    
-                    list.Add(enemy);
+                if (enemy.alive) { 
+                    if (enemy.tv.team != tv.team)
+                    {
 
+                        list.Add(enemy);
+
+                    }
                 }
             }
 
@@ -84,24 +130,7 @@ public class Unit : MonoBehaviour
 
 
 
-    public bool IsTargetWithinAttackRange(Unit target)
-    {
-
-        Bounds attackBounds = new Bounds(transform.position + (Vector3) attackOffset, new Vector3(attackWidth, attackHeight, 0));
-
-        Bounds targetAttackBounds = new Bounds(target.transform.position + (Vector3)target.attackOffset, new Vector3(target.attackWidth, target.attackHeight, 0));
-
-        // Check if the target's position is within the bounds
-        if (attackBounds.Intersects(targetAttackBounds))
-        {
-            Debug.Log("Target is within attack box");
-            Debug.Log("im in range");
-            return true;
-            // Perform attack or other actions here
-        }
-
-        return false;
-    }
+    
 
     private void OnDrawGizmos()
     {
@@ -109,6 +138,8 @@ public class Unit : MonoBehaviour
         Gizmos.DrawWireCube(transform.position + (Vector3)detectionOffset, new Vector3(detectionWidth, detectionHeight));
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(transform.position + (Vector3)attackOffset, new Vector3(attackWidth, attackHeight));
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireCube(targetLocation, new Vector3(1, 1));
     }
 }
    

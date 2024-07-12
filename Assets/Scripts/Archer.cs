@@ -2,94 +2,25 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Archer : Unit
+public class Archer : DamageUnit
 {
-    [Header("Unit Specific Attributes")]
-
-    public int attackDamage;
-    public Unit targetUnit;
-    public List<Unit> targetUnits;
-
-
-    public bool isAttacking;
+    public float fireRate;
+    public float arrowSpeed;
+    [Header("Arrow")]
+    public GameObject arrowPrefab;
+    public Transform shootPoint;
+    
 
     [Header("Debugging")]
     public int index;
     public int row;
-    bool isCoroutineRunning = false;
+    
 
 
     // Start is called before the first frame update
-    void Awake()
-    {
-        flip = false;
-        gv = FindObjectOfType<GlobalVariables>().GetComponent<GlobalVariables>();
-        rb = GetComponent<Rigidbody2D>();
-        tv = GetComponentInParent<TeamVariables>();
-        anim = GetComponentInChildren<Animator>();
+    
 
-        anim.Play("ArcherWalk");
-        targetLocation = transform.position;
-        Variation();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        switch (tv.state)
-        {
-            case State.Retreat:
-                Retreat(); break;
-            case State.Defend:
-                Defend(); break;
-            case State.Advance:
-                Advance();
-                break;
-        }
-    }
-    private void FixedUpdate()
-    {
-        Vector2 direction = (targetLocation - (Vector2)transform.position).normalized;
-
-        if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
-        {
-            GetComponent<SpriteRenderer>().flipX = flip;
-            return;
-        }
-        // is moving
-        else if (direction.x > 0)
-        {
-
-            flip = false;
-        }
-        else if (direction.x < 0)
-        {
-
-            flip = true;
-        }
-        anim.Play("ArcherWalk");
-        GetComponent<SpriteRenderer>().flipX = flip;
-        rb.MovePosition(rb.position + direction * (moveSpeed * Time.fixedDeltaTime));
-    }
-
-    public void Variation()
-    {
-        float sizeVariation = Random.Range(-0.1f, 0.1f);
-        float speedVariation = Random.Range(-0.15f, 0.15f);
-        transform.localScale = new Vector2(transform.localScale.x + sizeVariation, transform.localScale.y + sizeVariation);
-        moveSpeed = moveSpeed + speedVariation;
-        anim.speed = Random.Range(0.95f, 1.05f);
-    }
-    public void Retreat()
-    {
-        targetLocation = tv.retreatPos.transform.position;
-        if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
-        {
-            anim.Play("ArcherIdle");
-        }
-    }
-
-    public void GetPositionInFormation()
+    public override void GetPositionInFormation()
     {
         index = tv.rearLineUnits.IndexOf(gameObject);
         int maxUnitsPerColumn = gv.maxUnitsPerColumn;
@@ -125,80 +56,13 @@ public class Archer : Unit
         }
     }
 
-    public void Defend()
-    {
-        GetPositionInFormation();
-        // if swordsman is at the defend location
-        if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
-        {
-            anim.Play("ArcherIdle");
-            flip = (tv.team != 1);
-        }
-    }
-
-    public void Advance()
-    {
-        // when advancing, unless it is in the middle of attacking, it will always search for enemies, if it doesnt find any , march forward until it finds an enemy or the enemy tower
-        if (!isAttacking)
-        {
-            targetUnits = FindEnemies();
-
-            if (targetUnits.Count <= 0)
-            {
-                March();
-                return;
-            }
-
-            DecideEnemy(targetUnits);
-            if (IsTargetWithinAttackRange(targetUnit))
-            {
-                targetLocation = transform.position; // if you are attacking stand still
-                isAttacking = true;
-            }
-        }
-        else
-        {
-            Attack();
-        }
-    }
-
-
-    // When the Units are advancing they March forward
-    void March()
-    {
-        if (tv.team == 1)
-        {
-            if ((targetLocation.x - transform.position.x) < 1f)
-            {
-                targetLocation.x = transform.position.x + 5;
-                GetPositionInFormation();
-            }
-        }
-        else
-        {
-            if ((transform.position.x - targetLocation.x) < 1f)
-            {
-                targetLocation.x = transform.position.x - 5;
-                GetPositionInFormation();
-            }
-        }
-
-
-
-    }
-
-
-    /// <summary>
-    /// Decide which enemy to attack from the list of targets, this will be different for each type of unit
-    /// </summary>
-    /// <param name="enemies"></param>
-    public void DecideEnemy(List<Unit> enemies)
+    public override void DecideEnemy()
     {
         float closestdistance = Mathf.Infinity;
         targetUnit = null;
         targetLocation = Vector2.zero;
 
-        foreach (Unit enemy in enemies)
+        foreach (Unit enemy in targetUnits)
         {
             float distance = Vector2.Distance(transform.position, enemy.transform.position);
 
@@ -210,26 +74,18 @@ public class Archer : Unit
             }
 
         }
-        targetLocation = targetUnit.transform.position;
+        targetLocation = new Vector2(transform.position.x,targetUnit.transform.position.y+targetUnit.attackOffset.y);
     }
 
-    void Attack()
-    {
-        if (!isCoroutineRunning)
-        {
-            StartCoroutine(AttackAnimation());
-        }
-    }
-
-    public IEnumerator AttackAnimation()
+    public override IEnumerator AttackAnimation()
     {
         isCoroutineRunning = true;
         Unit initialTargetUnit = targetUnit;
 
         while (isAttacking)
         {
-            anim.Play("ArcherAttack");
-            yield return new WaitForSeconds(1);
+            anim.Play("Attack");
+            yield return new WaitForSeconds(fireRate);
 
             if (!gameObject.activeSelf)
             {
@@ -237,16 +93,15 @@ public class Archer : Unit
             }
             if (targetUnit == initialTargetUnit)
             {
-                if (targetUnit.gameObject.activeSelf)
+                if (targetUnit.alive)
                 {
-                    targetUnit.TakeDamage(attackDamage);
+                    ShootArrow();
 
                 }
                 else
                 {
-
                     isAttacking = false;
-                    anim.Play("ArcherWalk");
+                    anim.Play("Walk");
                 }
             }
         }
@@ -254,10 +109,50 @@ public class Archer : Unit
         yield return null;
     }
 
+    private void ShootArrow()
+    {
+        Debug.Log("i shot");
+        // Calculate direction towards the target
+        Vector2 direction = (targetUnit.transform.position - shootPoint.position).normalized;
+        if (direction.x < 0)
+        {
+            shootPoint.localPosition= new Vector2(shootPoint.localPosition.x * -1,shootPoint.localPosition.y);
+        }
+        // Instantiate the arrow at the shoot point
+        GameObject arrowInstance = Instantiate(arrowPrefab, shootPoint.position, Quaternion.identity,shootPoint);
+
+        
+
+        // Calculate the initial velocity for a parabolic trajectory
+        Rigidbody2D rb = arrowInstance.GetComponent<Rigidbody2D>();
+        Vector2 targetPosition = targetUnit.transform.position;
+        Vector2 initialVelocity = CalculateInitialVelocity(shootPoint.position, targetPosition, arrowSpeed);
+
+        // Set the initial velocity of the arrow
+        rb.velocity = initialVelocity;
+    }
+
+    private Vector2 CalculateInitialVelocity(Vector2 startPosition, Vector2 targetPosition, float speed)
+    {
+        // Calculate the distance to the target
+        Vector2 distance = targetPosition - startPosition;
+
+        // Calculate the time to reach the target
+        float time = distance.magnitude / speed;
+
+        // Calculate the initial velocity components
+        float vx = distance.x / time;
+        float vy = distance.y / time + 0.5f * Mathf.Abs(Physics2D.gravity.y) * time;
+
+        return new Vector2(vx, vy);
+    }
     protected override void Die()
     {
-        tv.frontLineUnits.Remove(gameObject);
-        gameObject.SetActive(false);
+        alive = false;
+        targetLocation = transform.position;// stand where you are
+        tv.rearLineUnits.Remove(gameObject);
+        StopAllCoroutines();
+        StartCoroutine(DeathAnimation());
     }
     // Testing functions
     void HandleMovement()

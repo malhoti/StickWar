@@ -9,21 +9,22 @@ public class Tower : Unit
     
     public List<Unit> targetUnits;
     // Start is called before the first frame update
-    void Start()
+    public override void Start()
     {
-        
         gv = FindObjectOfType<GlobalVariables>().GetComponent<GlobalVariables>();
         tv = GetComponentInParent<TeamVariables>();
         anim = GetComponentInChildren<Animator>();
-
-        Debug.Log(transform.position);
-
+        alive = true;
     }
 
     // Update is called once per frame
     void Update()
     {
         targetUnits = FindEnemies();
+        
+    }
+    public override void FixedUpdate()
+    {
         
     }
 }
