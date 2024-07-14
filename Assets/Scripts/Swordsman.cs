@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -14,7 +15,7 @@ public class Swordsman : DamageUnit
 
    
 
-    public override void GetPositionInFormation()
+    public override Vector2 GetPositionInFormation()
     {
 
         index = tv.frontLineUnits.IndexOf(gameObject);
@@ -39,12 +40,12 @@ public class Swordsman : DamageUnit
         float y = row * horizontalSpacing + yOffset;
         float x = (tv.team == 1) ? -column * verticalSpacing : column * verticalSpacing;
         if (tv.state != State.Advance){
-            targetLocation = new Vector2(startPos.x + x, startPos.y + y);
+            return new Vector2(startPos.x + x, startPos.y + y);
         }
         else
         {
             
-            targetLocation = new Vector2(targetLocation.x, startPos.y + y);
+            return new Vector2(targetLocation.x, startPos.y + y);
         }
     }
 
@@ -52,29 +53,34 @@ public class Swordsman : DamageUnit
     
     public override void DecideEnemy()
     {
-
-        float closestdistance = Mathf.Infinity;
-        targetUnit = null;
-
-        targetLocation = Vector2.zero;
-
-
-
-        foreach (Unit enemy in targetUnits)
+        targetUnit = targetUnits.OrderBy(unit => Vector2.Distance(transform.position, unit.transform.position)).FirstOrDefault();
+        if (targetUnit != null)
         {
-            float distance = Vector2.Distance(transform.position, enemy.transform.position);
+            targetLocation = new Vector2(targetUnit.transform.position.x, targetUnit.transform.position.y + targetUnit.attackOffset.y);
+        }
 
-            if (distance < closestdistance)
-            {
-                closestdistance = distance;
-                targetUnit = enemy;
+        //float closestdistance = Mathf.Infinity;
+        //targetUnit = null;
 
-            }
+        //targetLocation = Vector2.zero;
+
+
+
+        //foreach (Unit enemy in targetUnits)
+        //{
+        //    float distance = Vector2.Distance(transform.position, enemy.transform.position);
+
+        //    if (distance < closestdistance)
+        //    {
+        //        closestdistance = distance;
+        //        targetUnit = enemy;
+
+        //    }
             
 
-        }
+        //}
         
-        targetLocation = new Vector2(targetUnit.transform.position.x, targetUnit.transform.position.y + targetUnit.attackOffset.y);
+        //targetLocation = new Vector2(targetUnit.transform.position.x, targetUnit.transform.position.y + targetUnit.attackOffset.y);
 
 
     }

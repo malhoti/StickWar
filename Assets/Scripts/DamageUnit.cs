@@ -30,8 +30,9 @@ public class DamageUnit : Unit
     }
 
     // Update is called once per frame
-    public void Update()
+    public override void Update()
     {
+        base.Update();
         if(!alive) return;
         switch (tv.state)
         {
@@ -53,7 +54,7 @@ public class DamageUnit : Unit
         moveSpeed = moveSpeed + speedVariation;
         anim.speed = Random.Range(0.95f, 1.05f);
     }
-    public void Retreat()
+    public virtual void Retreat()
     {
         targetLocation = tv.retreatPos.transform.position;
         if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
@@ -65,20 +66,39 @@ public class DamageUnit : Unit
     /// <summary>
     /// Decides where in the formation it will stand, it will vary for different units
     /// </summary>
-    public virtual void GetPositionInFormation()
+    public virtual Vector2 GetPositionInFormation()
     {
-
+        return new Vector2();
     }
 
 
     public void Defend()
     {
-        GetPositionInFormation();
-        // if swordsman is at the defend location
-        if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
+        targetUnits = FindEnemies();
+        if (targetUnits.Count == 0) { 
+            targetLocation = GetPositionInFormation();
+            if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
+            {
+                anim.Play("Idle");
+                flip = tv.team != 1;
+            }
+            return;
+        }
+
+        if (!isAttacking)
         {
-            anim.Play("Idle");
-            flip = (tv.team != 1);
+
+            DecideEnemy();
+            if (IsTargetWithinAttackRange())
+            {
+                Debug.Log("hello");
+                targetLocation = transform.position; // if you are attacking stand still
+                isAttacking = true;
+            }
+        }
+        else
+        {
+            Attack();
         }
 
 
@@ -113,6 +133,32 @@ public class DamageUnit : Unit
         }
     }
 
+    public void AttackOrMoveToPosition(Vector2 location)
+    {
+        if (!isAttacking)
+        {
+            targetUnits = FindEnemies();
+
+            if (targetUnits.Count <= 0)
+            {
+                targetLocation = location;
+                return;
+            }
+
+            DecideEnemy();
+            if (IsTargetWithinAttackRange())
+            {
+                Debug.Log("hello");
+                targetLocation = transform.position; // if you are attacking stand still
+                isAttacking = true;
+            }
+        }
+        else
+        {
+            Attack();
+        }
+    }
+
     public void March()
     {
 
@@ -121,7 +167,7 @@ public class DamageUnit : Unit
             if ((targetLocation.x - transform.position.x) < 1f)
             {
                 targetLocation.x = transform.position.x + 5;
-                GetPositionInFormation();
+                //GetPositionInFormation();
             }
         }
         else
@@ -129,7 +175,7 @@ public class DamageUnit : Unit
             if ((transform.position.x - targetLocation.x) < 1f)
             {
                 targetLocation.x = transform.position.x - 5;
-                GetPositionInFormation();
+                //GetPositionInFormation();
             }
         }
 

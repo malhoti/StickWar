@@ -45,8 +45,9 @@ public class Miner : Unit
     }
 
     // Update is called once per frame
-    public void Update()
+    public override void Update()
     {
+        base.Update();
         switch (tv.state)
         {
             case State.Retreat:

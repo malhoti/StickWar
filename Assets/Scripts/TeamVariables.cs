@@ -18,6 +18,7 @@ public class TeamVariables : MonoBehaviour
     public Transform retreatPos;
     public Transform unloadPos;
     public Transform defendPos;
+    public Transform towerArcherPos;
     public int gold;
 
     public ArmySpawn spawn;

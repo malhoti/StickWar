@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 public class Unit : MonoBehaviour
@@ -9,10 +10,13 @@ public class Unit : MonoBehaviour
     public TeamVariables tv;
     public Rigidbody2D rb;
     public Animator anim;
+    public HealthBar healthBar;
+    
 
     [Header("Attributes")]
     public float moveSpeed;
     public int health;
+    public int maxHealth;
 
     [Header("States")]
     public Vector2 targetLocation;
@@ -29,10 +33,20 @@ public class Unit : MonoBehaviour
     public float attackHeight;
     public Vector2 attackOffset;
 
+    [Header("Debugging")]
+    public Collider2D[] colliders;
+
 
     public virtual void Start()
     {
         alive = true;
+        health = maxHealth;
+        healthBar = GetComponentInChildren<HealthBar>();
+    }
+
+    public virtual void Update()
+    {
+        healthBar.UpdateHealthBar(health,maxHealth);
     }
     public virtual void FixedUpdate()
     {
@@ -100,31 +114,20 @@ public class Unit : MonoBehaviour
     /// <returns></returns>
     public List<Unit> FindEnemies()
     {
-        //Debug.Log("hi");
-        Collider2D[] colliders = Physics2D.OverlapBoxAll(transform.position + (Vector3)detectionOffset, new Vector2(detectionWidth, detectionHeight), 0);
+        colliders = Physics2D.OverlapBoxAll(transform.position + (Vector3)detectionOffset, new Vector2(detectionWidth, detectionHeight), 0);
 
         var list = new List<Unit>();
-        //Debug.Log(colliders.Length);
+        
 
         foreach (var collider in colliders)
         {
-            
             Unit enemy = collider.gameObject.GetComponent<Unit>();
-            if (enemy != null)
+            if (enemy == null || !enemy.alive || enemy.tv.team == tv.team)
             {
-                if (enemy.alive) { 
-                    if (enemy.tv.team != tv.team)
-                    {
-
-                        list.Add(enemy);
-
-                    }
-                }
+                continue;
             }
-
+            list.Add(enemy);
         }
-
-
         return list;
     }
 

@@ -8,6 +8,7 @@ public class GlobalVariables : MonoBehaviour
     [Header("Global Settings")]
     public int valuePerGold;
     public int maxUnits;
+    
 
     [Header("Army Soldiers")]
     public GameObject miner;
@@ -31,4 +32,5 @@ public class GlobalVariables : MonoBehaviour
     {
         
     }
+    
 }

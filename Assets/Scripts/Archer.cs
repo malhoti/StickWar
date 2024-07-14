@@ -10,17 +10,86 @@ public class Archer : DamageUnit
     public GameObject arrowPrefab;
     public Transform shootPoint;
     
-
+    
     [Header("Debugging")]
     public int index;
     public int row;
+    public bool reachedPos;
+
+
+
+
+    public override void Retreat()
+    {
+        if (tv.rearLineUnits.IndexOf(gameObject) < gv.maxUnitsPerColumn)
+        {
+            targetUnits = FindEnemies();
+            if (targetUnits.Count == 0)
+            {
+                GetPositionInRetreat();
+                if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
+                {
+                    anim.Play("Idle");
+                    flip = tv.team != 1;
+                }
+                return;
+            }
+
+            if (!isAttacking)
+            {
+
+                DecideEnemy();
+                if (IsTargetWithinAttackRange())
+                {
+                    Debug.Log("hello");
+                    targetLocation = transform.position; // if you are attacking stand still
+                    isAttacking = true;
+                }
+            }
+            else
+            {
+                Attack();
+            }
+        }
+
+        
+
+        else
+        {
+            targetLocation = tv.retreatPos.transform.position;
+            if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
+            {
+                anim.Play("Idle");
+            }
+        }
+
+    }
     
 
+    public void GetPositionInRetreat()
+    {
+        index = tv.rearLineUnits.IndexOf(gameObject);
+        int maxUnitsPerColumn = gv.maxUnitsPerColumn;
+        float horizontalSpacing = gv.horizontalSpacing;
+        Vector2 startPos = tv.towerArcherPos.position;
 
-    // Start is called before the first frame update
-    
+        int positionInColumn = index % maxUnitsPerColumn;
+        if (positionInColumn % 2 == 0)
+        {
+            row = positionInColumn / 2;
+        }
+        else
+        {
+            row = -(positionInColumn / 2) - 1;
+        }
 
-    public override void GetPositionInFormation()
+        int unitsInColumn = Mathf.Min(tv.rearLineUnits.Count, maxUnitsPerColumn);
+        float yOffset = (unitsInColumn % 2 == 0) ? horizontalSpacing / 2 : 0;
+        float y = row * horizontalSpacing + yOffset;
+
+        targetLocation = new Vector2(startPos.x, startPos.y + y);
+    }
+    public override Vector2 GetPositionInFormation()
     {
         index = tv.rearLineUnits.IndexOf(gameObject);
         int maxUnitsPerColumn = gv.maxUnitsPerColumn;
@@ -47,12 +116,12 @@ public class Archer : DamageUnit
         float x = (tv.team == 1) ? -(column+frontLineColumns) * verticalSpacing : (column + frontLineColumns) * verticalSpacing;
         if (tv.state != State.Advance)
         {
-            targetLocation = new Vector2(startPos.x + x, startPos.y + y);
+            return new Vector2(startPos.x + x, startPos.y + y);
         }
         else
         {
             //Debug.Log(y);
-            targetLocation = new Vector2(targetLocation.x, startPos.y + y);
+            return new Vector2(targetLocation.x, startPos.y + y);
         }
     }
 
@@ -76,7 +145,19 @@ public class Archer : DamageUnit
         }
         targetLocation = new Vector2(transform.position.x,targetUnit.transform.position.y+targetUnit.attackOffset.y);
     }
-
+    public override void Attack()
+    {
+        
+        if (IsTargetWithinAttackRange())
+        {
+            targetLocation = transform.position;
+            if (!isCoroutineRunning)
+            {
+                StartCoroutine(AttackAnimation());
+            }
+        }
+        else { DecideEnemy(); }
+    }
     public override IEnumerator AttackAnimation()
     {
         isCoroutineRunning = true;
