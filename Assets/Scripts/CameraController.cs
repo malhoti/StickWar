@@ -82,7 +82,7 @@ public class CameraController : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.white;
+        Gizmos.color = Color.black;
         Gizmos.DrawLine(new Vector2(leftBound, 10), new Vector2(leftBound, -10));
         Gizmos.DrawLine(new Vector2(rightBound, 10), new Vector2(rightBound, -10));
         Gizmos.DrawLine(new Vector2(10, yposition), new Vector2(-10, yposition));
