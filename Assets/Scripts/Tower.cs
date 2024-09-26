@@ -18,7 +18,7 @@ public class Tower : Unit
     }
 
     // Update is called once per frame
-    void Update()
+    public override void Update()
     {
         targetUnits = FindEnemies();
         
