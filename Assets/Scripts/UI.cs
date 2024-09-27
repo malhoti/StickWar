@@ -111,13 +111,13 @@ public class UI : MonoBehaviour
     }
     void Swordsman1Pressed()
     {
-        tv1.spawn.SpawnUnit(gv.swordsmen);
+        tv1.spawn.SpawnUnit(gv.swordsman);
         
     }
     
     void Swordsman2Pressed()
     {
-        tv2.spawn.SpawnUnit(gv.swordsmen);
+        tv2.spawn.SpawnUnit(gv.swordsman);
 
     }
 

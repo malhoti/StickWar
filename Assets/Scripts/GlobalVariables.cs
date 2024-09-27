@@ -8,12 +8,19 @@ public class GlobalVariables : MonoBehaviour
     [Header("Global Settings")]
     public int valuePerGold;
     public int maxUnits;
+    [Tooltip("Gold recieved every 3 seconds")]
+    public int passiveGoldRate;
     
 
     [Header("Army Soldiers")]
     public GameObject miner;
-    public GameObject swordsmen;
+    public GameObject swordsman;
     public GameObject archer;
+
+    [Header("Army Soldier Cost")]
+    public int minerCost;
+    public int swordsmanCost;
+    public int archerCost;
 
     [Header("Combat Settings")]
     public int maxUnitsPerColumn;

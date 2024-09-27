@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
@@ -36,16 +37,22 @@ public class Unit : MonoBehaviour
     [Header("Debugging")]
     public Collider2D[] colliders;
 
-
+    
     public virtual void Start()
     {
         alive = true;
         health = maxHealth;
+        flip = false;
+        gv = FindObjectOfType<GlobalVariables>().GetComponent<GlobalVariables>();
+        rb = GetComponent<Rigidbody2D>();
+        tv = GetComponentInParent<TeamVariables>();
+        anim = GetComponent<Animator>();
         healthBar = GetComponentInChildren<HealthBar>();
     }
 
     public virtual void Update()
     {
+        
         healthBar.UpdateHealthBar(health,maxHealth);
     }
     public virtual void FixedUpdate()

@@ -498,7 +498,7 @@ MonoBehaviour:
   rb: {fileID: 0}
   anim: {fileID: 0}
   healthBar: {fileID: 336141204071167784}
-  moveSpeed: 8.5
+  moveSpeed: 21.02
   health: 10
   maxHealth: 10
   targetLocation: {x: 0, y: 0}

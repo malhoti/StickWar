@@ -1502,6 +1502,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tower
       objectReference: {fileID: 0}
+    - target: {fileID: 6384437813136383613, guid: 02586ad08d54b634689fb00c1415f9bd, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6384437813136383613, guid: 02586ad08d54b634689fb00c1415f9bd, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -8161,6 +8169,14 @@ PrefabInstance:
     - target: {fileID: 4390473653422430173, guid: 02586ad08d54b634689fb00c1415f9bd, type: 3}
       propertyPath: m_Name
       value: Tower
+      objectReference: {fileID: 0}
+    - target: {fileID: 6384437813136383613, guid: 02586ad08d54b634689fb00c1415f9bd, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6384437813136383613, guid: 02586ad08d54b634689fb00c1415f9bd, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

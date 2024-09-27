@@ -10,7 +10,10 @@ public enum State
 }
 
 public class TeamVariables : MonoBehaviour
+
 {
+    public GlobalVariables gv;
+
     [Header("Team Number")]
     public int team;
 
@@ -38,13 +41,24 @@ public class TeamVariables : MonoBehaviour
     void Start()
     {
         team =  (gameObject.name == "Team1") ? 1 : 2;
-        gold = 0;
+        gold = 5;
         state = State.Defend;
+        StartCoroutine(PassiveGoldCoroutine());
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    IEnumerator PassiveGoldCoroutine()
+    {
+        while (true) // Infinite loop
+        {
+            yield return new WaitForSeconds(3f);
+            gold += gv.passiveGoldRate;
+            
+        }
     }
 }

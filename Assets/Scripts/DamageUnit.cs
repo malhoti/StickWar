@@ -15,15 +15,9 @@ public class DamageUnit : Unit
     public bool isAttacking;
 
     public bool isCoroutineRunning = false;
-    public void Awake()
+    public override void Start()
     {
-        alive = true;
-        flip = false;
-        gv = FindObjectOfType<GlobalVariables>().GetComponent<GlobalVariables>();
-        rb = GetComponent<Rigidbody2D>();
-        tv = GetComponentInParent<TeamVariables>();
-        anim = GetComponentInChildren<Animator>();
-
+        base.Start();
         anim.Play("Walk");
         targetLocation = transform.position;
         Variation();
