@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class Archer : DamageUnit
 {
@@ -8,7 +9,7 @@ public class Archer : DamageUnit
     public float arrowSpeed;
     [Header("Arrow")]
     public GameObject arrowPrefab;
-    public Transform shootPoint;
+    public UnityEngine.Transform shootPoint;
     
     
     [Header("Debugging")]
@@ -21,13 +22,19 @@ public class Archer : DamageUnit
 
     public override void Retreat()
     {
+        
+        // true for archers that can attack from garrison, only a maximum of how many units are allowed per column are allowed
         if (tv.rearLineUnits.IndexOf(gameObject) < gv.maxUnitsPerColumn)
         {
+
+            // sets the the limit of archers so that they can go out of position when retreat state, they stay there, this prevents archers chasing units that are retreating
+            targetLocation.x =tv.towerArcherPos.transform.position.x;
+
             targetUnits = FindEnemies();
             if (targetUnits.Count == 0)
             {
                 GetPositionInRetreat();
-                if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
+                if (Vector2.Distance(transform.position, targetLocation) < 1f)
                 {
                     anim.Play("Idle");
                     flip = tv.team != 1;
@@ -37,11 +44,12 @@ public class Archer : DamageUnit
 
             if (!isAttacking)
             {
-
+                targetUnit = null;
+                
                 DecideEnemy();
                 if (IsTargetWithinAttackRange())
                 {
-                    Debug.Log("hello");
+                    
                     targetLocation = transform.position; // if you are attacking stand still
                     isAttacking = true;
                 }
@@ -57,7 +65,7 @@ public class Archer : DamageUnit
         else
         {
             targetLocation = tv.retreatPos.transform.position;
-            if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
+            if (Vector2.Distance(transform.position, targetLocation) < 1f)
             {
                 anim.Play("Idle");
             }
@@ -125,6 +133,9 @@ public class Archer : DamageUnit
         }
     }
 
+    /// <summary>
+    /// function which changes targetLocation and sets targetUnit to an enemy
+    /// </summary>
     public override void DecideEnemy()
     {
         float closestdistance = Mathf.Infinity;
@@ -145,18 +156,67 @@ public class Archer : DamageUnit
         }
         targetLocation = new Vector2(transform.position.x,targetUnit.transform.position.y+targetUnit.attackOffset.y);
     }
+
+    //public override void Attack()
+    //{
+       
+        
+    //    targetLocation = transform.position;
+    //    if (!isCoroutineRunning)
+    //    {
+    //        StartCoroutine(AttackAnimation());
+    //    }
+        
+    
+    //}
+    public override IEnumerator AttackAnimation()
+    {
+        isCoroutineRunning = true;
+        Unit initialTargetUnit = targetUnit;
+
+        while (isAttacking)
+        {
+            anim.Play("Attack");
+            yield return new WaitForSeconds(fireRate);
+
+            if (!gameObject.activeSelf)
+            {
+                yield break;
+            }
+
+            // IMPORTANT - whilst it is attacking, it checks if the targetUnit is the same as the 'firerate' seoncds ago, because targetUnit can change by other places of the code , if archer decode to change enemy for a reason
+            // we also have to check if the target is within range at all times, otherwise we will be attacking a unit outside the range, 
+            // we also check if the unit is also alive
+            if (targetUnit == initialTargetUnit && IsTargetWithinAttackRange() && targetUnit.alive)
+            {
+                
+                ShootArrow();   
+            }
+            else
+            {
+                ResetValues();
+            }
+            
+        }
+        isCoroutineRunning = false;
+        yield return null;
+    }
+    /*
     public override void Attack()
     {
-        
-        if (IsTargetWithinAttackRange())
+        //Debug.Log("checking to see if within attack range as archer");
+
+
+        if (!isCoroutineRunning)
         {
-            targetLocation = transform.position;
-            if (!isCoroutineRunning)
-            {
-                StartCoroutine(AttackAnimation());
-            }
+            StartCoroutine(AttackAnimation());
         }
-        else { DecideEnemy(); }
+
+        else
+        {
+            DecideEnemy();
+            isAttacking = false;
+        }
     }
     public override IEnumerator AttackAnimation()
     {
@@ -174,8 +234,9 @@ public class Archer : DamageUnit
             }
             if (targetUnit == initialTargetUnit)
             {
-                if (targetUnit.alive)
+                if (IsTargetWithinAttackRange() && targetUnit.alive)
                 {
+                    targetLocation = transform.position;
                     ShootArrow();
 
                 }
@@ -189,10 +250,10 @@ public class Archer : DamageUnit
         isCoroutineRunning = false;
         yield return null;
     }
-
+    */
     private void ShootArrow()
     {
-        Debug.Log("i shot");
+        
         // Calculate direction towards the target
         Vector2 direction = (targetUnit.transform.position - shootPoint.position).normalized;
         if (direction.x < 0)

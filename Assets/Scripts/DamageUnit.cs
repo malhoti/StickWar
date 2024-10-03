@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
 
@@ -13,8 +14,9 @@ public class DamageUnit : Unit
 
 
     public bool isAttacking;
-
     public bool isCoroutineRunning = false;
+    public bool reachedDefendMaxPos = false;
+
     public override void Start()
     {
         base.Start();
@@ -50,8 +52,9 @@ public class DamageUnit : Unit
     }
     public virtual void Retreat()
     {
+        ResetValues();
         targetLocation = tv.retreatPos.transform.position;
-        if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
+        if (Vector2.Distance(transform.position, targetLocation) < 1f)
         {
             anim.Play("Idle");
         }
@@ -68,17 +71,40 @@ public class DamageUnit : Unit
 
     public void Defend()
     {
+        // whilst defending, units will always scout for enemies
         targetUnits = FindEnemies();
-        if (targetUnits.Count == 0) { 
+        
+
+        // this checks if unit reaches the max range it can chase enemies and flags it
+        if (((tv.team == 1 && transform.position.x > tv.defendMaxPos.position.x) || (tv.team == 2 && transform.position.x < tv.defendMaxPos.position.x)))
+        {
+            reachedDefendMaxPos = true;
+        }
+
+
+        // if unit doesnt have a target or it reached the end, it will go back to the formation
+        if (targetUnits.Count == 0 || reachedDefendMaxPos)
+        {
+            
             targetLocation = GetPositionInFormation();
             if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
             {
+               
+                ResetValues();
+                reachedDefendMaxPos = false;
                 anim.Play("Idle");
                 flip = tv.team != 1;
             }
             return;
         }
 
+        
+
+
+
+
+
+        // if it does detect enemies, and it isnt currently attacking, then decide for which enemy to go to 
         if (!isAttacking)
         {
 
@@ -127,38 +153,38 @@ public class DamageUnit : Unit
         }
     }
 
-    public void AttackOrMoveToPosition(Vector2 location)
-    {
-        if (!isAttacking)
-        {
-            targetUnits = FindEnemies();
+    //public void AttackOrMoveToPosition(Vector2 location)
+    //{
+    //    if (!isAttacking)
+    //    {
+    //        targetUnits = FindEnemies();
 
-            if (targetUnits.Count <= 0)
-            {
-                targetLocation = location;
-                return;
-            }
+    //        if (targetUnits.Count <= 0)
+    //        {
+    //            targetLocation = location;
+    //            return;
+    //        }
 
-            DecideEnemy();
-            if (IsTargetWithinAttackRange())
-            {
-                Debug.Log("hello");
-                targetLocation = transform.position; // if you are attacking stand still
-                isAttacking = true;
-            }
-        }
-        else
-        {
-            Attack();
-        }
-    }
+    //        DecideEnemy();
+    //        if (IsTargetWithinAttackRange())
+    //        {
+    //            Debug.Log("hello");
+    //            targetLocation = transform.position; // if you are attacking stand still
+    //            isAttacking = true;
+    //        }
+    //    }
+    //    else
+    //    {
+    //        Attack();
+    //    }
+    //}
 
     public void March()
     {
 
         if (tv.team == 1)
         {
-            if ((targetLocation.x - transform.position.x) < 1f)
+            if ((targetLocation.x - transform.position.x) < positionThreshold)
             {
                 targetLocation.x = transform.position.x + 5;
                 //GetPositionInFormation();
@@ -166,7 +192,7 @@ public class DamageUnit : Unit
         }
         else
         {
-            if ((transform.position.x - targetLocation.x) < 1f)
+            if ((transform.position.x - targetLocation.x) < positionThreshold)
             {
                 targetLocation.x = transform.position.x - 5;
                 //GetPositionInFormation();
@@ -201,10 +227,11 @@ public class DamageUnit : Unit
         // Check if the target's position is within the bounds
         if (attackBounds.Intersects(targetAttackBounds))
         {
+            isAttacking = true;
             return true;
             // Perform attack or other actions here
         }
-
+        isAttacking = false;
         return false;
     }
 
@@ -231,23 +258,36 @@ public class DamageUnit : Unit
             {
                 yield break;
             }
-            if (targetUnit == initialTargetUnit)
+
+            // IMPORTANT - whilst it is attacking, it checks if the targetUnit is the same as the 'firerate' seoncds ago, because targetUnit can change by other places of the code , if archer decode to change enemy for a reason
+            // we also have to check if the target is within range at all times, otherwise we will be attacking a unit outside the range, 
+            // we also check if the unit is also alive
+            if (targetUnit == initialTargetUnit && IsTargetWithinAttackRange() && targetUnit.alive)
             {
-                if (targetUnit.alive)
-                {
-                    targetUnit.TakeDamage(attackDamage);
 
-                }
-                else
-                {
-
-                    isAttacking = false;
-                    anim.Play("Walk");
-                }
+                targetUnit.TakeDamage(attackDamage);
             }
+            else
+            {
+                ResetValues();
+            }
+
         }
         isCoroutineRunning = false;
         yield return null;
+        
+    }
+
+    /// <summary>
+    /// This function resets all variables that are linked to attacking, such as target units and sets attacking to false
+    /// </summary>
+    public void ResetValues()
+    {
+        targetUnits = null;
+        targetUnit = null;
+        isAttacking = false;
+        isCoroutineRunning = false;
+        //anim.Play("Idle");
     }
 
     private void OnDrawGizmos()

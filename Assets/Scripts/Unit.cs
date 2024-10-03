@@ -34,8 +34,11 @@ public class Unit : MonoBehaviour
     public float attackHeight;
     public Vector2 attackOffset;
 
+    public float positionThreshold;
+
     [Header("Debugging")]
     public Collider2D[] colliders;
+
 
     
     public virtual void Start()
@@ -48,6 +51,8 @@ public class Unit : MonoBehaviour
         tv = GetComponentInParent<TeamVariables>();
         anim = GetComponent<Animator>();
         healthBar = GetComponentInChildren<HealthBar>();
+        positionThreshold = 1f;
+        
     }
 
     public virtual void Update()
@@ -60,8 +65,9 @@ public class Unit : MonoBehaviour
         Vector2 direction = (targetLocation - (Vector2)transform.position).normalized;
 
 
-        if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
+        if (Vector2.Distance(transform.position, targetLocation) < positionThreshold)
         {
+            transform.position = targetLocation;
             GetComponent<SpriteRenderer>().flipX = flip;
             return;
         }
@@ -138,9 +144,9 @@ public class Unit : MonoBehaviour
         return list;
     }
 
-
-
     
+
+
 
     private void OnDrawGizmos()
     {
