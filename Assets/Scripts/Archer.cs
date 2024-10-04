@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static UnityEngine.RuleTile.TilingRuleOutput;
 
@@ -138,37 +139,28 @@ public class Archer : DamageUnit
     /// </summary>
     public override void DecideEnemy()
     {
-        float closestdistance = Mathf.Infinity;
-        targetUnit = null;
-        targetLocation = Vector2.zero;
-
-        foreach (Unit enemy in targetUnits)
+        targetUnit = targetUnits.OrderBy(unit => Vector2.Distance(transform.position, unit.transform.position)).FirstOrDefault();
+        if (targetUnit != null)
         {
-            float distance = Vector2.Distance(transform.position, enemy.transform.position);
-
-            if (distance < closestdistance)
-            {
-                closestdistance = distance;
-                targetUnit = enemy;
-
-            }
-
+            
+            targetLocation = new Vector2(transform.position.x, targetUnit.transform.position.y + targetUnit.attackOffset.y);
         }
-        targetLocation = new Vector2(transform.position.x,targetUnit.transform.position.y+targetUnit.attackOffset.y);
+        
     }
 
-    //public override void Attack()
-    //{
-       
-        
-    //    targetLocation = transform.position;
-    //    if (!isCoroutineRunning)
-    //    {
-    //        StartCoroutine(AttackAnimation());
-    //    }
-        
-    
-    //}
+    public override void Attack()
+    {
+
+
+        targetLocation = transform.position;
+        if (!isCoroutineRunning)
+        {
+            StartCoroutine(AttackAnimation());
+        }
+
+
+    }
+
     public override IEnumerator AttackAnimation()
     {
         isCoroutineRunning = true;

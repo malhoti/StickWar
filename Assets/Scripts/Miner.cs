@@ -48,6 +48,7 @@ public class Miner : Unit
     public override void Update()
     {
         base.Update();
+        if (!alive) return;
         switch (tv.state)
         {
             case State.Retreat:
@@ -400,12 +401,26 @@ public class Miner : Unit
 
     protected override void Die()
     {
+        if (targetGold)
+        {
+            if (miningPosition == 1)
+            {
+                targetGold.spot1Available = true;
+            }
+            else
+            {
+                targetGold.spot2Available = true;
+            }
+        }
+        Debug.Log("i died");
+        targetLocation = transform.position;
         alive = false;
-        targetLocation = transform.position;// stand where you are
+        isMining = false;
         tv.gathererUnits.Remove(gameObject);
         StopAllCoroutines();
         StartCoroutine(DeathAnimation());
     }
+    
 
     // Testing functions
     void HandleMovement()

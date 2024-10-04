@@ -290,12 +290,13 @@ MonoBehaviour:
   detectionWidth: 0
   detectionHeight: 0
   detectionOffset: {x: 0, y: 0}
-  attackWidth: 1.23
+  attackWidth: 0.24
   attackHeight: 0.24
   attackOffset: {x: 0, y: 0}
+  positionThreshold: 0
   colliders: []
   storageBar: {fileID: 5755375602753235419}
-  maxStorage: 4
+  maxStorage: 72
   storage: 0
   targetGold: {fileID: 0}
   miningPosition: 0

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
@@ -53,7 +54,7 @@ public class DamageUnit : Unit
     public virtual void Retreat()
     {
         ResetValues();
-        targetLocation = tv.retreatPos.transform.position;
+        targetLocation.x = tv.retreatPos.transform.position.x;
         if (Vector2.Distance(transform.position, targetLocation) < 1f)
         {
             anim.Play("Idle");
@@ -98,11 +99,7 @@ public class DamageUnit : Unit
             return;
         }
 
-        
-
-
-
-
+     
 
         // if it does detect enemies, and it isnt currently attacking, then decide for which enemy to go to 
         if (!isAttacking)
@@ -132,14 +129,15 @@ public class DamageUnit : Unit
         if (!isAttacking)
         {
             targetUnits = FindEnemies();
+            DecideEnemy();
 
-            if (targetUnits.Count <= 0)
+            if (targetUnit == null)
             {
                 March();
                 return;
             }
 
-            DecideEnemy();
+            
             if (IsTargetWithinAttackRange())
             {
                 Debug.Log("hello");
@@ -153,31 +151,7 @@ public class DamageUnit : Unit
         }
     }
 
-    //public void AttackOrMoveToPosition(Vector2 location)
-    //{
-    //    if (!isAttacking)
-    //    {
-    //        targetUnits = FindEnemies();
-
-    //        if (targetUnits.Count <= 0)
-    //        {
-    //            targetLocation = location;
-    //            return;
-    //        }
-
-    //        DecideEnemy();
-    //        if (IsTargetWithinAttackRange())
-    //        {
-    //            Debug.Log("hello");
-    //            targetLocation = transform.position; // if you are attacking stand still
-    //            isAttacking = true;
-    //        }
-    //    }
-    //    else
-    //    {
-    //        Attack();
-    //    }
-    //}
+    
 
     public void March()
     {
@@ -203,17 +177,36 @@ public class DamageUnit : Unit
 
     }
     /// <summary>
-    /// Decide which enemy to attack from the list of targets, this will be different for each type of unit
+    /// Decide which enemy to attack from the list of targets, this will be different for each type of unit, and sets the targetlocation
     /// </summary>
     public virtual void DecideEnemy()
     {
+        // checks which unit is closest, wont target enemies that are retreating
+        targetUnit = targetUnits.OrderBy(unit => Vector2.Distance(transform.position, unit.transform.position)).FirstOrDefault();
+        Unit enemyTower = targetUnits.Where(unit => unit is Tower).FirstOrDefault();
+        if (targetUnit != null)
+        {
+            if (targetUnit.tv.state == State.Retreat && enemyTower == null)
+            {
+                targetUnit = null;
+                return;
+            }
+            if (targetUnit.tv.state == State.Retreat && enemyTower != null)
+            {
+                targetUnit = enemyTower;
+                
+            }
+            
+            targetLocation = new Vector2(targetUnit.transform.position.x, targetUnit.transform.position.y + targetUnit.attackOffset.y);
 
+        }
     }
 
     public bool IsTargetWithinAttackRange()
     {
         Vector3 attackPosition = transform.position + (Vector3)attackOffset;
-        Vector3 attackSize = new Vector2(Mathf.Max(attackWidth,targetUnit.GetComponent<SpriteRenderer>().bounds.size.x), attackHeight);
+        //Vector3 attackSize = new Vector2(Mathf.Max(attackWidth,targetUnit.GetComponent<SpriteRenderer>().bounds.size.x), attackHeight);
+        Vector3 attackSize = new Vector2(attackWidth, attackHeight);
 
         
         Vector3 targetAttackPosition = targetUnit.transform.position + (Vector3)targetUnit.attackOffset;
@@ -301,8 +294,8 @@ public class DamageUnit : Unit
         Gizmos.color = Color.magenta;
         Vector3 attackPosition = transform.position + (Vector3)attackOffset;
         Vector3 targetAttackPosition = targetUnit.transform.position + (Vector3)targetUnit.attackOffset;
-        Vector3 attackSize = new Vector2(Mathf.Max(attackWidth, targetUnit.GetComponent<SpriteRenderer>().bounds.size.x), attackHeight);
-
+        Vector3 attackSize = new Vector2(attackWidth, attackHeight);
+        
 
 
 

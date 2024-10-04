@@ -50,43 +50,6 @@ public class Swordsman : DamageUnit
     }
 
 
-    
-    public override void DecideEnemy()
-    {
-        targetUnit = targetUnits.OrderBy(unit => Vector2.Distance(transform.position, unit.transform.position)).FirstOrDefault();
-        if (targetUnit != null)
-        {
-            targetLocation = new Vector2(targetUnit.transform.position.x, targetUnit.transform.position.y + targetUnit.attackOffset.y);
-        }
-
-        //float closestdistance = Mathf.Infinity;
-        //targetUnit = null;
-
-        //targetLocation = Vector2.zero;
-
-
-
-        //foreach (Unit enemy in targetUnits)
-        //{
-        //    float distance = Vector2.Distance(transform.position, enemy.transform.position);
-
-        //    if (distance < closestdistance)
-        //    {
-        //        closestdistance = distance;
-        //        targetUnit = enemy;
-
-        //    }
-            
-
-        //}
-        
-        //targetLocation = new Vector2(targetUnit.transform.position.x, targetUnit.transform.position.y + targetUnit.attackOffset.y);
-
-
-    }
-
-
-
     protected override void Die()
     {
         alive = false;

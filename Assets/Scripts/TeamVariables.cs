@@ -45,6 +45,8 @@ public class TeamVariables : MonoBehaviour
         gold = 5;
         state = State.Defend;
         StartCoroutine(PassiveGoldCoroutine());
+
+        
     }
 
     // Update is called once per frame

@@ -25,6 +25,7 @@ public class ArmySpawn : MonoBehaviour
     void Start()
     {
         tv = GetComponentInParent<TeamVariables>();
+        SpawnUnit(gv.miner);
         if(testOutSpawn)
         testSpawnUnit();
     }
