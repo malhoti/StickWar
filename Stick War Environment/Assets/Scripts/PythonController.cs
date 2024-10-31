@@ -62,7 +62,7 @@ public class PythonController : MonoBehaviour
                     RLAgent targetAgent = rlagents.FirstOrDefault(a => a.agentId == agentId);
                     if (targetAgent != null) {
                         Debug.Log("found agent");
-                        targetAgent.ProcessMessage(message);
+                        targetAgent.ProcessMessage(response);
                     }
                     //Debug.Log($"Processed message from {client.Client.RemoteEndPoint}: {response["message"]}");
                     

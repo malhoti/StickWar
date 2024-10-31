@@ -2,6 +2,7 @@ import json
 import socket
 import torch
 import torch.optim as optim
+import random
 # from dqn import DQN  # Import DQN model class from dqn.py
 # from replay_buffer import ReplayBuffer  # Import replay buffer class
 # from training import train_dqn  # Import training function
@@ -55,11 +56,12 @@ def main():
              
                 message = data_dict
                 
-                print(f"Messaged Recieved from {addr}: {message}")
+                #print(f"Messaged Recieved from {addr}: {message}")
 
                 # Step 3: Send the selected action back to Unity
                 response = json.dumps({"message": "I am From Python",
-                                       "agent_id": "1"})
+                                       "agent_id": "1",
+                                       "action" : random.randint(1,3)})
                 conn.sendall(response.encode())
 
                 

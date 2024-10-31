@@ -419,8 +419,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5db0ce829c20d8243abf15cf43dae86e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rlagents:
-  - {fileID: 1720782883}
+  rlagents: []
   serverRequirement: 1
 --- !u!4 &43113814
 Transform:
@@ -3954,9 +3953,9 @@ MonoBehaviour:
   defendPos: {fileID: 583993045}
   towerArcherPos: {fileID: 1375517500}
   defendMaxPos: {fileID: 1858965682}
+  spawn: {fileID: 1764888443}
   gold: 0
   health: 0
-  spawn: {fileID: 1764888443}
   units: 0
   goldList: []
   gathererUnits: []
@@ -3964,6 +3963,7 @@ MonoBehaviour:
   rearLineUnits: []
   enemiesInVicinity: []
   state: 0
+  isDead: 0
 --- !u!4 &1010853699
 Transform:
   m_ObjectHideFlags: 0
@@ -4002,7 +4002,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1010853697}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a1c87d27c04c3ec4c87fa728414b644f, type: 3}
   m_Name: 
@@ -6725,9 +6725,9 @@ MonoBehaviour:
   defendPos: {fileID: 2086090618}
   towerArcherPos: {fileID: 1461838429}
   defendMaxPos: {fileID: 2087019704}
+  spawn: {fileID: 264526639}
   gold: 5
   health: 0
-  spawn: {fileID: 264526639}
   units: 0
   goldList: []
   gathererUnits: []
@@ -6735,6 +6735,7 @@ MonoBehaviour:
   rearLineUnits: []
   enemiesInVicinity: []
   state: 0
+  isDead: 0
 --- !u!4 &1720782882
 Transform:
   m_ObjectHideFlags: 0
@@ -8338,14 +8339,6 @@ PrefabInstance:
     - target: {fileID: 6000469660677967353, guid: e1dc9f6d8e64bbb4db7def7cdb7cb112, type: 3}
       propertyPath: m_Name
       value: Tower
-      objectReference: {fileID: 0}
-    - target: {fileID: 6384437813136383613, guid: 02586ad08d54b634689fb00c1415f9bd, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6384437813136383613, guid: 02586ad08d54b634689fb00c1415f9bd, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

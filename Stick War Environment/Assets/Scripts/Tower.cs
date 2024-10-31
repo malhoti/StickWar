@@ -30,7 +30,8 @@ public class Tower : Unit
         health -= damage;
         if (health <= 0)
         {
-
+            tv.health = 0;
+            tv.isDead = true;
             Die();
         }
         tv.health = health;
