@@ -77,7 +77,7 @@ public class ArmySpawn : MonoBehaviour
     }
     bool CanSpawn(GameObject unit) 
     {
-        Debug.Log((gv.swordsmanCost, tv.gold));
+        //Debug.Log((gv.swordsmanCost, tv.gold));
         if (unit == gv.miner )
         {
             if (tv.gold >= gv.minerCost)

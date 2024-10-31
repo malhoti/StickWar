@@ -43,20 +43,23 @@ def main():
             step = 0  # Track steps for target network update
 
             while True:
+                
                 # Step 1: Receive data from Unity
                 data = conn.recv(1024)
+                
                 if not data:
                     break
 
                 # Decode JSON data
                 data_dict = json.loads(data.decode())
              
-                message = data_dict['message']
+                message = data_dict
                 
                 print(f"Messaged Recieved from {addr}: {message}")
 
                 # Step 3: Send the selected action back to Unity
-                response = json.dumps({"message": "I am From Python"})
+                response = json.dumps({"message": "I am From Python",
+                                       "agent_id": "1"})
                 conn.sendall(response.encode())
 
                 

@@ -4,30 +4,71 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Threading;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 
 public class PythonController : MonoBehaviour
 {
+    public static PythonController Instance;
+
     private TcpClient client;
-    private NetworkStream stream;
+    public NetworkStream stream;
+    private ConcurrentQueue<string> receivedMessages = new ConcurrentQueue<string>();
+
+    public List<RLAgent> rlagents= new List<RLAgent>();
+
+    public bool serverRequirement = true;
 
     private float timer = 0;
-    private float sendInterval = 1;
+    private float sendInterval = 0.5f;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); // Optional: Keep the instance across scenes
+        }
+        else
+        {
+            Destroy(gameObject); // Ensure only one instance exists
+        }
+    }
 
     void Start()
     {
-        ConnectToServer();
+        if (serverRequirement)
+        {
+            rlagents = new List<RLAgent>(FindObjectsOfType<RLAgent>());
+            ConnectToServer();
+            ReceiveFromPython();
+        }
     }
 
     void Update()
     {
-        timer += Time.deltaTime;
-        if (timer > sendInterval)
+        
+        if (serverRequirement)
         {
-            SendToPython("Im from Unity");
-
-            // Receive the action and pass it to AgentBehavior
-            string action = ReceiveFromPython();
-            timer = 0;
+            timer += Time.deltaTime;
+            if (timer > sendInterval)
+            {
+                while (receivedMessages.TryDequeue(out string message))
+                {
+                    JObject response = JObject.Parse(message);
+                    int agentId = (int)response["agent_id"];
+                    Debug.Log(agentId + ": this is the agent id we got from python");
+                    RLAgent targetAgent = rlagents.FirstOrDefault(a => a.agentId == agentId);
+                    if (targetAgent != null) {
+                        Debug.Log("found agent");
+                        targetAgent.ProcessMessage(message);
+                    }
+                    //Debug.Log($"Processed message from {client.Client.RemoteEndPoint}: {response["message"]}");
+                    
+                }
+                timer = 0;
+            }
         }
 
     }
@@ -40,7 +81,7 @@ public class PythonController : MonoBehaviour
             client = new TcpClient("192.168.1.206", 5000);  // Connect to the Python server
             stream = client.GetStream();
 
-            // Retrieve the remote endpoint (server address) and log it
+            
             Debug.Log($"Connected to Python server at {client.Client.RemoteEndPoint}.");
         }
         catch (Exception e)
@@ -50,23 +91,18 @@ public class PythonController : MonoBehaviour
     }
 
 
-    void SendToPython(string message)
+    public async void SendToPython(JObject message)
     {
         try
         {
-            // Create a JSON object
-            JObject jsonMessage = new JObject
-            {
-                ["message"] = message
-            };
-
+            
             // Convert JSON object to string
-            string jsonString = jsonMessage.ToString();
+            string jsonString = message.ToString();
 
             // Send JSON string to Python
             byte[] data = Encoding.ASCII.GetBytes(jsonString);
-            stream.Write(data, 0, data.Length);
-            //Debug.Log("Sent to Python: " + jsonString);
+            await stream.WriteAsync(data, 0, data.Length);
+            Debug.Log("Sent to Python: " + jsonString);
         }
         catch (Exception e)
         {
@@ -74,27 +110,32 @@ public class PythonController : MonoBehaviour
         }
     }
 
-    string ReceiveFromPython()
+    async void ReceiveFromPython()
     {
         byte[] data = new byte[256];
-        int bytes = stream.Read(data, 0, data.Length);
-        try
-        {
-            JObject response = JObject.Parse(Encoding.ASCII.GetString(data, 0, bytes));
-            Debug.Log($"Messaged recieved from {client.Client.RemoteEndPoint}: {response["message"]}");
-            return response.ToString();
+        
+        while (stream != null && stream.CanRead)
+        {           
+            try
+            {                
+                int bytes = await stream.ReadAsync(data, 0, data.Length);        
+                string response = Encoding.ASCII.GetString(data, 0, bytes);
+                Debug.Log($"Messaged recieved from {client.Client.RemoteEndPoint}: {response}");
+                receivedMessages.Enqueue(response);
+                Debug.Log("Message Enqueued");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("JSON Parsing error: " + e.Message);
+            }
         }
-        catch (Exception e)
-        {
-            Debug.LogError("JSON Parsing error: " + e.Message);
-        }
-        return null;
-
+            
+        
     }
 
     void OnApplicationQuit()
     {
-        stream.Close();
-        client.Close();
+        //stream.Close();
+        //client.Close();
     }
 }

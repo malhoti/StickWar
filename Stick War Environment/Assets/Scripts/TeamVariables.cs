@@ -4,9 +4,9 @@ using UnityEngine;
 
 public enum State
 {
-    Retreat,
-    Defend,
-    Advance
+    Retreat = 0,
+    Defend = 1,
+    Advance = 2
 }
 
 public class TeamVariables : MonoBehaviour
@@ -24,6 +24,7 @@ public class TeamVariables : MonoBehaviour
     public Transform towerArcherPos;
     public Transform defendMaxPos;
     public int gold;
+    public int health;
 
     public ArmySpawn spawn;
 
@@ -35,11 +36,13 @@ public class TeamVariables : MonoBehaviour
     
     public List<GameObject> rearLineUnits;
 
+    public List<Unit> enemiesInVicinity;
+
     
 
     public State state;
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         team =  (gameObject.name == "Team1") ? 1 : 2;
         gold = 5;

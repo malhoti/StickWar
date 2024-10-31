@@ -390,6 +390,53 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1 &43113812
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 43113814}
+  - component: {fileID: 43113813}
+  m_Layer: 0
+  m_Name: Server
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &43113813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 43113812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5db0ce829c20d8243abf15cf43dae86e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rlagents:
+  - {fileID: 1720782883}
+  serverRequirement: 1
+--- !u!4 &43113814
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 43113812}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 74.76859, y: 30.131298, z: -0.9307734}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &55291654
 GameObject:
   m_ObjectHideFlags: 0
@@ -3880,6 +3927,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1010853699}
   - component: {fileID: 1010853698}
+  - component: {fileID: 1010853700}
   m_Layer: 0
   m_Name: Team2
   m_TagString: Untagged
@@ -3907,12 +3955,14 @@ MonoBehaviour:
   towerArcherPos: {fileID: 1375517500}
   defendMaxPos: {fileID: 1858965682}
   gold: 0
+  health: 0
   spawn: {fileID: 1764888443}
   units: 0
   goldList: []
   gathererUnits: []
   frontLineUnits: []
   rearLineUnits: []
+  enemiesInVicinity: []
   state: 0
 --- !u!4 &1010853699
 Transform:
@@ -3945,6 +3995,20 @@ Transform:
   - {fileID: 1858965682}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1010853700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1010853697}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1c87d27c04c3ec4c87fa728414b644f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentId: 0
+  tv: {fileID: 0}
 --- !u!1 &1028301739
 GameObject:
   m_ObjectHideFlags: 0
@@ -6634,6 +6698,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1720782882}
   - component: {fileID: 1720782881}
+  - component: {fileID: 1720782883}
   m_Layer: 0
   m_Name: Team1
   m_TagString: Untagged
@@ -6661,12 +6726,14 @@ MonoBehaviour:
   towerArcherPos: {fileID: 1461838429}
   defendMaxPos: {fileID: 2087019704}
   gold: 5
+  health: 0
   spawn: {fileID: 264526639}
   units: 0
   goldList: []
   gathererUnits: []
   frontLineUnits: []
   rearLineUnits: []
+  enemiesInVicinity: []
   state: 0
 --- !u!4 &1720782882
 Transform:
@@ -6699,6 +6766,20 @@ Transform:
   - {fileID: 1461838429}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1720782883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1720782880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1c87d27c04c3ec4c87fa728414b644f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentId: 0
+  tv: {fileID: 0}
 --- !u!1 &1732738431
 GameObject:
   m_ObjectHideFlags: 0
@@ -8276,6 +8357,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 519420032}
+  - {fileID: 43113814}
   - {fileID: 947771985}
   - {fileID: 898130833}
   - {fileID: 1901931862}

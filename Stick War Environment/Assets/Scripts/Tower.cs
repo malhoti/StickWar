@@ -18,12 +18,22 @@ public class Tower : Unit
     public override void Update()
     {
         base.Update();
-        targetUnits = FindEnemies();
+        tv.enemiesInVicinity = FindEnemies();
         
     }
     public override void FixedUpdate()
     {
         
+    }
+    public override void TakeDamage(int damage)
+    {
+        health -= damage;
+        if (health <= 0)
+        {
+
+            Die();
+        }
+        tv.health = health;
     }
     
 }
