@@ -52,8 +52,7 @@ public class Swordsman : DamageUnit
 
     protected override void Die()
     {
-        alive = false;
-        targetLocation = transform.position;// stand where you are
+        base.Die();
         tv.frontLineUnits.Remove(gameObject);
         StopAllCoroutines();
         StartCoroutine(DeathAnimation());

@@ -7,6 +7,8 @@ using System.Threading;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Collections;
 
 public class PythonController : MonoBehaviour
 {
@@ -21,7 +23,7 @@ public class PythonController : MonoBehaviour
     public bool serverRequirement = true;
 
     private float timer = 0;
-    private float sendInterval = 0.5f;
+    private float sendInterval = 0.1f;
 
     private void Awake()
     {
@@ -42,9 +44,17 @@ public class PythonController : MonoBehaviour
         {
             rlagents = new List<RLAgent>(FindObjectsOfType<RLAgent>());
             ConnectToServer();
+
+            // Start receiving messages from Python
             ReceiveFromPython();
+
         }
+            
     }
+    
+
+    
+
 
     void Update()
     {
@@ -57,12 +67,17 @@ public class PythonController : MonoBehaviour
                 while (receivedMessages.TryDequeue(out string message))
                 {
                     JObject response = JObject.Parse(message);
+
+                   
+
                     int agentId = (int)response["agent_id"];
-                    Debug.Log(agentId + ": this is the agent id we got from python");
+
+                    Debug.Log($"this is agent id:{agentId}");
+
                     RLAgent targetAgent = rlagents.FirstOrDefault(a => a.agentId == agentId);
                     if (targetAgent != null) {
-                        Debug.Log("found agent");
-                        targetAgent.ProcessMessage(response);
+                        
+                        targetAgent.PlayAction(response);
                     }
                     //Debug.Log($"Processed message from {client.Client.RemoteEndPoint}: {response["message"]}");
                     
@@ -115,27 +130,31 @@ public class PythonController : MonoBehaviour
         byte[] data = new byte[256];
         
         while (stream != null && stream.CanRead)
-        {           
+        {
             try
-            {                
-                int bytes = await stream.ReadAsync(data, 0, data.Length);        
+            {
+
+                int bytes = await stream.ReadAsync(data, 0, data.Length);
                 string response = Encoding.ASCII.GetString(data, 0, bytes);
-                Debug.Log($"Messaged recieved from {client.Client.RemoteEndPoint}: {response}");
+                Debug.Log($"Messaged sent by Python: {response}");
                 receivedMessages.Enqueue(response);
-                Debug.Log("Message Enqueued");
+
+              
             }
             catch (Exception e)
             {
                 Debug.LogError("JSON Parsing error: " + e.Message);
+                break;
             }
         }
-            
         
+
+
     }
 
     void OnApplicationQuit()
     {
-        //stream.Close();
-        //client.Close();
+        stream.Close();
+        client.Close();
     }
 }

@@ -401,6 +401,7 @@ public class Miner : Unit
 
     protected override void Die()
     {
+        base.Die();
         if (targetGold)
         {
             if (miningPosition == 1)
@@ -412,9 +413,8 @@ public class Miner : Unit
                 targetGold.spot2Available = true;
             }
         }
-        Debug.Log("i died");
-        targetLocation = transform.position;
-        alive = false;
+        
+        
         isMining = false;
         tv.gathererUnits.Remove(gameObject);
         StopAllCoroutines();

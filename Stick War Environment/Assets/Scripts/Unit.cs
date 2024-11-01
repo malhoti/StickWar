@@ -4,6 +4,7 @@ using Unity.VisualScripting;
 //using UnityEditor.SceneManagement;
 using UnityEngine;
 
+
 public class Unit : MonoBehaviour
 {
     [Header("Components")]
@@ -39,7 +40,7 @@ public class Unit : MonoBehaviour
     [Header("Debugging")]
     public Collider2D[] colliders;
 
-
+    
     
     public virtual void Start()
     {
@@ -102,7 +103,7 @@ public class Unit : MonoBehaviour
     {
         alive = false;
         targetLocation = transform.position;// stand where you are
-        gameObject.SetActive(false);
+        //gameObject.SetActive(false);
     }
 
 

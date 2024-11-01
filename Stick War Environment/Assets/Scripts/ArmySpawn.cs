@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ArmySpawn : MonoBehaviour
@@ -38,45 +39,48 @@ public class ArmySpawn : MonoBehaviour
 
     
 
-    public void SpawnUnit(GameObject unit)
+    public bool SpawnUnit(GameObject unit)
     {
         if (CanSpawn(unit))
         {
             float halfHeight = vertical / 2;
             float halfWidth = horizontal / 2;
-            if (tv.units < gv.maxUnits)
+            
+            Vector2 spawnPosition = new Vector2(
+                UnityEngine.Random.Range(transform.position.x - halfWidth, transform.position.x + halfWidth),
+                UnityEngine.Random.Range(transform.position.y - halfHeight, transform.position.y + halfHeight));
+
+            GameObject spawnedUnit = Instantiate(unit, spawnPosition, Quaternion.identity, tv.transform);
+            tv.units++;
+
+            if (unit.GetComponent<Miner>() != null)
             {
-                Vector2 spawnPosition = new Vector2(
-                    UnityEngine.Random.Range(transform.position.x - halfWidth, transform.position.x + halfWidth),
-                    UnityEngine.Random.Range(transform.position.y - halfHeight, transform.position.y + halfHeight));
-
-                GameObject spawnedUnit = Instantiate(unit, spawnPosition, Quaternion.identity, tv.transform);
-                tv.units++;
-
-                if (unit.GetComponent<Miner>() != null)
-                {
-                    tv.gathererUnits.Add(spawnedUnit);
-                }
-                if (unit.GetComponent<Swordsman>() != null)
-                {
-                    tv.frontLineUnits.Add(spawnedUnit);
-                }
-                if (unit.GetComponent<Archer>() != null)
-                {
-                    tv.rearLineUnits.Add(spawnedUnit);
-                }
-
-
+                tv.gathererUnits.Add(spawnedUnit);
             }
+            if (unit.GetComponent<Swordsman>() != null)
+            {
+                tv.frontLineUnits.Add(spawnedUnit);
+            }
+            if (unit.GetComponent<Archer>() != null)
+            {
+                tv.rearLineUnits.Add(spawnedUnit);
+            }
+
+            return true;
         }
         else
         {
             Debug.Log("youre too broke");
+            return false;
         }
 
     }
     bool CanSpawn(GameObject unit) 
     {
+        if (tv.units >= gv.maxUnits)
+        {
+            return false;
+        }
         //Debug.Log((gv.swordsmanCost, tv.gold));
         if (unit == gv.miner )
         {

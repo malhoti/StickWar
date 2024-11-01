@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class GlobalVariables : MonoBehaviour
 {
+    
     // Start is called before the first frame update
     [Header("Global Settings")]
     public int valuePerGold;
@@ -26,18 +27,26 @@ public class GlobalVariables : MonoBehaviour
     public int maxUnitsPerColumn;
     public float horizontalSpacing; // the spacing between each unit in that row, so that means the spacing between the units vertically
     public float verticalSpacing; // the gap between each column or the space between each line horizontally
+
+    public TeamVariables team1;
+    public TeamVariables team2;
+
+    public float timescale;
     
-    
-    
-    void Start()
+
+    void Awake()
     {
-        
+        team1 = GameObject.Find("Team1").GetComponent<TeamVariables>();
+        team2 = GameObject.Find("Team2").GetComponent<TeamVariables>();
+
     }
+
+    
 
     // Update is called once per frame
     void Update()
     {
-        
+        Time.timeScale = timescale;
     }
     
 }

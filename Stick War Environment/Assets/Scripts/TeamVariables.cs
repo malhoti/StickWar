@@ -48,11 +48,17 @@ public class TeamVariables : MonoBehaviour
         StartCoroutine(PassiveGoldCoroutine());      
     }
 
+    private void Start()
+    {
+        gv = FindObjectOfType<GlobalVariables>();   
+    }
+
     // Update is called once per frame
     void Update()
     {
         
     }
+   
 
     IEnumerator PassiveGoldCoroutine()
     {

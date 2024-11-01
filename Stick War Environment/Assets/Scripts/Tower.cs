@@ -12,6 +12,7 @@ public class Tower : Unit
     public override void Start()
     {
         base.Start();
+        tv.health = health;
     }
 
     // Update is called once per frame
@@ -19,6 +20,7 @@ public class Tower : Unit
     {
         base.Update();
         tv.enemiesInVicinity = FindEnemies();
+        tv.health = health;
         
     }
     public override void FixedUpdate()
@@ -32,6 +34,7 @@ public class Tower : Unit
         {
             tv.health = 0;
             tv.isDead = true;
+            gameObject.SetActive(false);
             Die();
         }
         tv.health = health;

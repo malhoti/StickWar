@@ -282,8 +282,7 @@ public class Archer : DamageUnit
     }
     protected override void Die()
     {
-        alive = false;
-        targetLocation = transform.position;// stand where you are
+        base.Die();
         tv.rearLineUnits.Remove(gameObject);
         StopAllCoroutines();
         StartCoroutine(DeathAnimation());
