@@ -72,14 +72,14 @@ public class PythonController : MonoBehaviour
 
                     int agentId = (int)response["agent_id"];
 
-                    Debug.Log($"this is agent id:{agentId}");
+                    
 
                     RLAgent targetAgent = rlagents.FirstOrDefault(a => a.agentId == agentId);
                     if (targetAgent != null) {
                         
                         targetAgent.PlayAction(response);
                     }
-                    //Debug.Log($"Processed message from {client.Client.RemoteEndPoint}: {response["message"]}");
+                    
                     
                 }
                 timer = 0;
@@ -113,11 +113,11 @@ public class PythonController : MonoBehaviour
             
             // Convert JSON object to string
             string jsonString = message.ToString();
-
+            
             // Send JSON string to Python
             byte[] data = Encoding.ASCII.GetBytes(jsonString);
             await stream.WriteAsync(data, 0, data.Length);
-            Debug.Log("Sent to Python: " + jsonString);
+            //Debug.Log("Sent to Python: " + jsonString);
         }
         catch (Exception e)
         {
@@ -136,7 +136,7 @@ public class PythonController : MonoBehaviour
 
                 int bytes = await stream.ReadAsync(data, 0, data.Length);
                 string response = Encoding.ASCII.GetString(data, 0, bytes);
-                Debug.Log($"Messaged sent by Python: {response}");
+                //Debug.Log($"Messaged sent by Python: {response}");
                 receivedMessages.Enqueue(response);
 
               

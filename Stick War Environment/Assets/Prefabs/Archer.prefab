@@ -530,9 +530,9 @@ MonoBehaviour:
   rb: {fileID: 0}
   anim: {fileID: 0}
   healthBar: {fileID: 1407608755404963120}
-  moveSpeed: 8
-  health: 10
-  maxHealth: 8
+  moveSpeed: 10
+  health: 60
+  maxHealth: 60
   targetLocation: {x: 0, y: 0}
   flip: 0
   alive: 0
@@ -542,13 +542,15 @@ MonoBehaviour:
   attackWidth: 87.6
   attackHeight: 0.96
   attackOffset: {x: 0, y: 0}
+  positionThreshold: 0
   colliders: []
-  attackDamage: 2
+  attackDamage: 15
+  attackSpeed: 3
   targetUnit: {fileID: 0}
   targetUnits: []
   isAttacking: 0
   isCoroutineRunning: 0
-  fireRate: 2
+  reachedDefendMaxPos: 0
   arrowSpeed: 20.2
   arrowPrefab: {fileID: 3383051118205215007, guid: bd6fdb55ac3a06b48a74690a53da4248, type: 3}
   shootPoint: {fileID: 388934825185036642}

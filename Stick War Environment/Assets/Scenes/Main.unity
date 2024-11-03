@@ -390,52 +390,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!1 &43113812
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 43113814}
-  - component: {fileID: 43113813}
-  m_Layer: 0
-  m_Name: Server
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &43113813
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 43113812}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5db0ce829c20d8243abf15cf43dae86e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rlagents: []
-  serverRequirement: 0
---- !u!4 &43113814
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 43113812}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 74.76859, y: 30.131298, z: -0.9307734}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &55291654
 GameObject:
   m_ObjectHideFlags: 0
@@ -3954,7 +3908,7 @@ MonoBehaviour:
   towerArcherPos: {fileID: 1375517500}
   defendMaxPos: {fileID: 1858965682}
   spawn: {fileID: 1764888443}
-  gold: 0
+  gold: 300
   health: 0
   units: 0
   goldList: []
@@ -6729,7 +6683,7 @@ MonoBehaviour:
   towerArcherPos: {fileID: 1461838429}
   defendMaxPos: {fileID: 2087019704}
   spawn: {fileID: 264526639}
-  gold: 5
+  gold: 300
   health: 0
   units: 0
   goldList: []
@@ -6777,7 +6731,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1720782880}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a1c87d27c04c3ec4c87fa728414b644f, type: 3}
   m_Name: 
@@ -7271,15 +7225,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d361f0c301a33644bf01b2ed718ee82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  valuePerGold: 20
+  valuePerGold: 10
   maxUnits: 20
   passiveGoldRate: 10
   miner: {fileID: 3673222441977379106, guid: 2fe2bff0e6781f04994da4505dc9279f, type: 3}
   swordsman: {fileID: 8542004769833073021, guid: 62ae4eb1574e7934dabfece3445d9d50, type: 3}
   archer: {fileID: 9030650384025695978, guid: 0afffe090a2a2e14dad4ba58cb95f027, type: 3}
-  minerCost: 1
-  swordsmanCost: 1
-  archerCost: 1
+  minerCost: 200
+  swordsmanCost: 100
+  archerCost: 150
   maxUnitsPerColumn: 3
   horizontalSpacing: 4
   verticalSpacing: 3
@@ -8359,7 +8313,6 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 519420032}
-  - {fileID: 43113814}
   - {fileID: 947771985}
   - {fileID: 898130833}
   - {fileID: 1901931862}

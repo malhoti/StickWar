@@ -498,9 +498,9 @@ MonoBehaviour:
   rb: {fileID: 0}
   anim: {fileID: 0}
   healthBar: {fileID: 336141204071167784}
-  moveSpeed: 21.02
+  moveSpeed: 10
   health: 10
-  maxHealth: 10
+  maxHealth: 100
   targetLocation: {x: 0, y: 0}
   flip: 0
   alive: 0
@@ -510,12 +510,15 @@ MonoBehaviour:
   attackWidth: 3.2
   attackHeight: 0.79
   attackOffset: {x: 0, y: 0}
+  positionThreshold: 0
   colliders: []
-  attackDamage: 3
+  attackDamage: 25
+  attackSpeed: 1.5
   targetUnit: {fileID: 0}
   targetUnits: []
   isAttacking: 0
   isCoroutineRunning: 0
+  reachedDefendMaxPos: 0
   index: 0
   row: 0
 --- !u!50 &4159240133864503436

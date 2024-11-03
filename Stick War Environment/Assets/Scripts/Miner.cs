@@ -18,6 +18,7 @@ public class Miner : Unit
 
     public int maxStorage;
     public int storage;
+    public float mineSpeed;
 
     [Header("Debugging")]
     public Gold targetGold;
@@ -366,7 +367,7 @@ public class Miner : Unit
 
         while (isMining)
         {
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(mineSpeed);
 
             if (storage >= maxStorage)
             {

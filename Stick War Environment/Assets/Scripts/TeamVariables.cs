@@ -42,7 +42,7 @@ public class TeamVariables : MonoBehaviour
     void Awake()
     {
         team =  (gameObject.name == "Team1") ? 1 : 2;
-        gold = 5;
+        
         state = State.Defend;
         isDead = false;
         StartCoroutine(PassiveGoldCoroutine());      

@@ -4,9 +4,21 @@ using UnityEngine;
 using Newtonsoft.Json.Linq;
 using UnityEditor.PackageManager;
 using UnityEditor.VersionControl;
+using System.IO;
+using System.Net.Sockets;
+using System;
+using System.Collections.Concurrent;
+using System.Text;
 
 public class RLAgent : MonoBehaviour
 {
+    private TcpClient client;
+    public NetworkStream stream;
+    private ConcurrentQueue<string> receivedMessages = new ConcurrentQueue<string>();
+    private bool isConnected = false;
+    private float sendInterval = 0.1f;
+
+
     public int agentId;
     public TeamVariables tv;
     public TeamVariables enemytv;
@@ -52,22 +64,58 @@ public class RLAgent : MonoBehaviour
             _enemyTowerHealth = gv.team1.health;
             _enemyUnitCount = gv.team1.units;
         }
-        StartCoroutine(WaitForPythonControllerAndSend());
+        StartCoroutine(ConnectAndCommunicateWithServer());
 
     }
-     
 
-        IEnumerator WaitForPythonControllerAndSend()
+
+    IEnumerator ConnectAndCommunicateWithServer()
     {
-        while (PythonController.Instance.stream == null && gv == null)
+        // Attempt connection
+        try
         {
-            Debug.Log("Waiting for PythonController instance to become ready...");
-            yield return null; // Wait for the next frame
+            client = new TcpClient("192.168.1.206", 5000);
+            stream = client.GetStream();
+            isConnected = true;
+            Debug.Log($"Agent {agentId} connected to Python server.");
         }
-        SendObservation(); // when we connect we send the observation to python first.
+        catch (Exception e)
+        {
+            Debug.LogError("Connection error: " + e.Message);
+            yield break;
+        }
 
+        // Start sending initial observation
+        SendObservation();
+
+        // Begin asynchronous reception
+        while (isConnected)
+        {
+            yield return new WaitForSeconds(sendInterval);
+            ReceiveFromPython();
+        }
     }
-   
+
+    void ReceiveFromPython()
+    {
+        if (stream == null || !stream.CanRead) return;
+
+        try
+        {
+            byte[] data = new byte[256];
+            int bytes = stream.Read(data, 0, data.Length);
+            string response = Encoding.ASCII.GetString(data, 0, bytes);
+            JObject message = JObject.Parse(response);
+
+            PlayAction(message);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Receive error: " + e.Message);
+            isConnected = false;
+        }
+    }
+
 
     public void PlayAction(JObject message)
     {
@@ -75,16 +123,16 @@ public class RLAgent : MonoBehaviour
         reward = 0;
 
         /*
-         * 1 : Retreat
-         * 2 : Defend
-         * 3 : Advance
-         * 4 : Spawn Miner
-         * 5 : Spawn Swordsman
-         * 6 : Spawn Archer
+         * 0 : Retreat
+         * 1 : Defend
+         * 2 : Advance
+         * 3 : Spawn Miner
+         * 4 : Spawn Swordsman
+         * 5 : Spawn Archer
          */
 
         // These are rewards that are given based off the action
-        if (action == 1)
+        if (action == 0)
         {
             tv.state = State.Retreat;
             if (tv.units <= 0) // discourage to retreat if there are no units
@@ -92,11 +140,11 @@ public class RLAgent : MonoBehaviour
                 reward -= 100;
             }
         }
-        else if (action == 2)
+        else if (action == 1)
         {
             tv.state = State.Defend;
         }
-        else if (action == 3)
+        else if (action == 2)
         {
             tv.state = State.Advance;
             if (tv.frontLineUnits.Count == 0 && tv.rearLineUnits.Count ==0) // discourage to advance if there are no attack units
@@ -104,7 +152,7 @@ public class RLAgent : MonoBehaviour
                 reward -= 100;
             }
         }
-        else if (action == 4)
+        else if (action == 3)
         {
             if (tv.spawn.SpawnUnit(gv.miner))
             {
@@ -115,7 +163,7 @@ public class RLAgent : MonoBehaviour
                 reward -= 10;
             }
         }
-        else if (action == 5)
+        else if (action == 4)
         {
             if (tv.spawn.SpawnUnit(gv.swordsman))
             {
@@ -126,7 +174,7 @@ public class RLAgent : MonoBehaviour
                 reward -= 10;
             }
         }
-        else if (action == 6)
+        else if (action == 5)
         {
             if (tv.spawn.SpawnUnit(gv.archer))
             {
@@ -143,10 +191,19 @@ public class RLAgent : MonoBehaviour
             reward -= 5;
         }
 
-        
+
 
         // these are rewards that are not action based but rather what is happening in the game such as if we lose units or do damage to tower
 
+        ApplyRewards();
+
+
+        //Debug.Log($"messaged recieved by agent {agentId}, and has been processed");
+        SendObservation();
+        
+    }
+    private void ApplyRewards()
+    {
         if (tv.gathererUnits.Count > tv.goldList.Count * 2 || tv.gathererUnits.Count < 0) // we do not need more miners then there are gold options its not efficient and we cant have 0 miners as we need miners
         {
             reward -= 100;
@@ -157,7 +214,8 @@ public class RLAgent : MonoBehaviour
             reward -= 100;
         }
 
-        if (tv.gold > 100){
+        if (tv.gold > 100)
+        {
             reward -= 30;
         }
 
@@ -181,24 +239,15 @@ public class RLAgent : MonoBehaviour
             reward += 20 * (_enemyUnitCount - enemytv.units);
         }
 
-        if(tv.state == State.Retreat && enemytv.state != State.Advance) // punish for staying retreat if enemy isnt attacking
+        if (tv.state == State.Retreat && enemytv.state != State.Advance) // punish for staying retreat if enemy isnt attacking
         {
             reward -= 200;
         }
 
-
-
         _towerHealth = tv.health;
         _unitCount = tv.units;
-        _enemyTowerHealth = enemytv.health;      
+        _enemyTowerHealth = enemytv.health;
         _enemyUnitCount = enemytv.units;
-
-    // we will process the message and action to take here
-
-
-        Debug.Log($"messaged recieved by agent {agentId}, and has been processed");
-        SendObservation();
-        
     }
 
     public void SendObservation()
@@ -214,16 +263,11 @@ public class RLAgent : MonoBehaviour
             ["reward"] = reward,
             ["done"] = tv.isDead
         };
-        PythonController.Instance.SendToPython(response);
+        SendToPython(response);
     }
 
     public JObject GetState()
     {
-        if (tv == null)
-        {
-            Debug.LogError($"RLAgent (ID: {agentId}) - 'tv' (TeamVariables) is null.");
-            return null; // or handle appropriately
-        }
         JObject state = new JObject
         {
             ["gold"] = tv.gold,
@@ -232,8 +276,38 @@ public class RLAgent : MonoBehaviour
             ["swordsmen"] = tv.frontLineUnits.Count,
             ["archers"] = tv.rearLineUnits.Count,
             ["stateValue"] = (int)tv.state,
+            ["nearby_resources_available"] = tv.goldList.Count,
+
+            ["enemy_health"] = enemytv.health,              
+            ["enemy_miners"] = enemytv.gathererUnits.Count / 10.0f, 
+            ["enemy_swordsmen"] = enemytv.frontLineUnits.Count,      
+            ["enemy_archers"] = enemytv.rearLineUnits.Count,
             ["enemies_in_vicinity"] = tv.enemiesInVicinity.Count
         };
         return state;
+    }
+
+    public async void SendToPython(JObject message)
+    {
+        try
+        {
+            // Convert JSON object to string
+            string jsonString = message.ToString();
+
+            // Send JSON string to Python
+            byte[] data = Encoding.ASCII.GetBytes(jsonString);
+            await stream.WriteAsync(data, 0, data.Length);
+            //Debug.Log("Sent to Python: " + jsonString);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Send error: " + e.Message);
+        }
+    }
+
+    void OnApplicationQuit()
+    {
+        if (stream != null) stream.Close();
+        if (client != null) client.Close();
     }
 }

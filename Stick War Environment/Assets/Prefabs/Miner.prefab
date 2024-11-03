@@ -296,8 +296,9 @@ MonoBehaviour:
   positionThreshold: 0
   colliders: []
   storageBar: {fileID: 5755375602753235419}
-  maxStorage: 72
+  maxStorage: 20
   storage: 0
+  mineSpeed: 1
   targetGold: {fileID: 0}
   miningPosition: 0
   isMining: 0

@@ -10,6 +10,7 @@ public class DamageUnit : Unit
 
 
     public int attackDamage;
+    public float attackSpeed;
     public Unit targetUnit;
     public List<Unit> targetUnits;
 
@@ -140,7 +141,7 @@ public class DamageUnit : Unit
             
             if (IsTargetWithinAttackRange())
             {
-                Debug.Log("hello");
+                
                 targetLocation = transform.position; // if you are attacking stand still
                 isAttacking = true;
             }
@@ -245,7 +246,7 @@ public class DamageUnit : Unit
         while (isAttacking)
         {
             anim.Play("Attack");
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(attackSpeed);
 
             if (!gameObject.activeSelf)
             {

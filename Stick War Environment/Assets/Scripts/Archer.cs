@@ -6,7 +6,7 @@ using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class Archer : DamageUnit
 {
-    public float fireRate;
+    
     public float arrowSpeed;
     [Header("Arrow")]
     public GameObject arrowPrefab;
@@ -169,7 +169,7 @@ public class Archer : DamageUnit
         while (isAttacking)
         {
             anim.Play("Attack");
-            yield return new WaitForSeconds(fireRate);
+            yield return new WaitForSeconds(attackSpeed);
 
             if (!gameObject.activeSelf)
             {

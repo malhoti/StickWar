@@ -70,7 +70,7 @@ public class ArmySpawn : MonoBehaviour
         }
         else
         {
-            Debug.Log("youre too broke");
+            //Debug.Log("youre too broke");
             return false;
         }
 
