@@ -282,8 +282,7 @@ MonoBehaviour:
   anim: {fileID: 7643379814079239810}
   healthBar: {fileID: 5442194835026181035}
   moveSpeed: 8
-  health: 0
-  maxHealth: 10
+  health: 80
   targetLocation: {x: 0, y: 0}
   flip: 0
   alive: 1

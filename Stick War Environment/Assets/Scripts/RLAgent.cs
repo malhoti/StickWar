@@ -16,7 +16,7 @@ public class RLAgent : MonoBehaviour
     public NetworkStream stream;
     private ConcurrentQueue<string> receivedMessages = new ConcurrentQueue<string>();
     private bool isConnected = false;
-    private float sendInterval = 0.1f;
+    private float sendInterval = 0.5f;
 
 
     public int agentId;
@@ -120,69 +120,112 @@ public class RLAgent : MonoBehaviour
     public void PlayAction(JObject message)
     {
         int action = message["action"].Value<int>();
+        bool renderEpisode = message["render"].Value<bool>();
+
+        //if (renderepisode)
+        //{
+        //    time.timescale = 1;
+        //    GetComponent<Camera>().main.enabled = true;
+        //}
+        //else
+        //{
+        //    time.timescale = 20;
+        //    GetComponent<Camera>().main.enabled = true;
+        //}
+
         reward = 0;
 
-        /*
-         * 0 : Retreat
-         * 1 : Defend
-         * 2 : Advance
-         * 3 : Spawn Miner
-         * 4 : Spawn Swordsman
-         * 5 : Spawn Archer
+        /* 0 : Do Nothing
+         * 1 : Retreat
+         * 2 : Defend
+         * 3 : Advance
+         * 4 : Spawn Miner
+         * 5 : Spawn Swordsman
+         * 6 : Spawn Archer
          */
 
         // These are rewards that are given based off the action
-        if (action == 0)
-        {
-            tv.state = State.Retreat;
-            if (tv.units <= 0) // discourage to retreat if there are no units
+        if (action == 0) {
+            if (tv.gold < gv.minerCost || tv.units >= gv.maxUnits)
             {
-                reward -= 100;
+                reward += 5; // Small reward for waiting until resources are adequate
+            }
+
+            if (tv.gold > gv.minerCost && tv.units < gv.maxUnits)
+            {
+                reward -= 2; // Slight penalty for inaction when resources allow
+            }
+            if (tv.state == State.Defend && tv.frontLineUnits.Count > 0)
+            {
+                reward += 2; // Reward for holding a strong defensive position
             }
         }
         else if (action == 1)
         {
-            tv.state = State.Defend;
+            if (tv.state == State.Retreat) // discourage clicking same state
+            {
+                reward -= 10;
+            }
+            if (tv.units <= 0) // discourage to retreat if there are no units
+            {
+                reward -= 100;
+            }
+            tv.state = State.Retreat;
         }
         else if (action == 2)
         {
-            tv.state = State.Advance;
+            if (tv.state == State.Defend) // discourage clicking same state
+            {
+                reward -= 10;
+            }
+            tv.state = State.Defend;
+        }
+        else if (action == 3)
+        {
+            if (tv.state == State.Advance) // discourage clicking same state
+            {
+                reward -= 10;
+            }
+            
             if (tv.frontLineUnits.Count == 0 && tv.rearLineUnits.Count ==0) // discourage to advance if there are no attack units
             {
                 reward -= 100;
             }
-        }
-        else if (action == 3)
-        {
-            if (tv.spawn.SpawnUnit(gv.miner))
-            {
-                reward += 10;
-            }
-            else
-            {
-                reward -= 10;
-            }
+            tv.state = State.Advance;
         }
         else if (action == 4)
         {
-            if (tv.spawn.SpawnUnit(gv.swordsman))
+            
+            if (tv.spawn.SpawnUnit(gv.miner))
             {
-                reward += 10;
+                reward += 5;
             }
             else
             {
-                reward -= 10;
+                reward -= 5;
             }
+
         }
         else if (action == 5)
         {
-            if (tv.spawn.SpawnUnit(gv.archer))
+            if (tv.spawn.SpawnUnit(gv.swordsman))
             {
-                reward += 10;
+                reward += 20;
             }
             else
             {
-                reward -= 10;
+                reward -= 20;
+            }
+        }
+        else if (action == 6)
+        {
+            if (tv.spawn.SpawnUnit(gv.archer))
+            {
+                reward += 20;
+            }
+            else
+            {
+                reward -= 20;
             }
         }
         else
@@ -214,34 +257,57 @@ public class RLAgent : MonoBehaviour
             reward -= 100;
         }
 
-        if (tv.gold > 100)
+        if (tv.gold > 1000)
         {
             reward -= 30;
+        }
+        if (tv.gold < 1000 && tv.gathererUnits.Count > 0)
+        {
+            reward += 5; // Encourage maintaining active miners
         }
 
 
         if (tv.health < _towerHealth) // punish for getting tower hit
         {
-            reward -= 10 * (_towerHealth - tv.health);
+            reward -= 1 * (_towerHealth - tv.health);
         }
         if (tv.units < _unitCount) // puinish for losing units
         {
-            reward -= 20 * (_unitCount - tv.units);
+            reward -= 10 * (_unitCount - tv.units);
         }
 
 
         if (enemytv.health < _enemyTowerHealth) //reward for attacking tower and killing their units
         {
-            reward += 10 * (_enemyTowerHealth - enemytv.health);
+            reward += 1 * (_enemyTowerHealth - enemytv.health);
         }
         if (enemytv.units < _unitCount)
         {
-            reward += 20 * (_enemyUnitCount - enemytv.units);
+            reward += 5 * (_enemyUnitCount - enemytv.units);
         }
 
         if (tv.state == State.Retreat && enemytv.state != State.Advance) // punish for staying retreat if enemy isnt attacking
         {
             reward -= 200;
+        }
+
+        if (tv.state == State.Advance && enemytv.state == State.Retreat)
+        {
+            reward += 50; // Reward for aggressive advantage-taking
+        }
+
+        if (tv.state == State.Retreat && tv.units < enemytv.units)
+        {
+            reward += 50; // Reward for intelligent retreat
+        }
+
+        if (tv.isDead)
+        {
+            reward -= 200;
+        }
+        if (enemytv.isDead)
+        {
+            reward += 200;
         }
 
         _towerHealth = tv.health;
@@ -261,7 +327,7 @@ public class RLAgent : MonoBehaviour
             ["agent_id"] = agentId,
             ["state"] = newState,
             ["reward"] = reward,
-            ["done"] = tv.isDead
+            ["done"] = gv.gameOver
         };
         SendToPython(response);
     }
@@ -278,11 +344,12 @@ public class RLAgent : MonoBehaviour
             ["stateValue"] = (int)tv.state,
             ["nearby_resources_available"] = tv.goldList.Count,
 
-            ["enemy_health"] = enemytv.health,              
-            ["enemy_miners"] = enemytv.gathererUnits.Count / 10.0f, 
-            ["enemy_swordsmen"] = enemytv.frontLineUnits.Count,      
+            ["enemy_health"] = enemytv.health,
+            ["enemy_miners"] = enemytv.gathererUnits.Count / 10.0f,
+            ["enemy_swordsmen"] = enemytv.frontLineUnits.Count,
             ["enemy_archers"] = enemytv.rearLineUnits.Count,
-            ["enemies_in_vicinity"] = tv.enemiesInVicinity.Count
+            ["enemies_in_vicinity"] = tv.enemiesInVicinity.Count,
+            ["episode_time"] = gv.time
         };
         return state;
     }

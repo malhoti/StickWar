@@ -150,99 +150,29 @@ public class Archer : DamageUnit
 
     public override void Attack()
     {
-
-
         targetLocation = transform.position;
-        if (!isCoroutineRunning)
-        {
-            StartCoroutine(AttackAnimation());
-        }
-
-
+        anim.Play("Attack");
     }
 
-    public override IEnumerator AttackAnimation()
+    
+
+    /// <summary>
+    /// Called by the animation event when the attack should deal damage.
+    /// </summary>
+    public override void OnAttackHit()
     {
-        isCoroutineRunning = true;
-        Unit initialTargetUnit = targetUnit;
-
-        while (isAttacking)
+        if (targetUnit != null && targetUnit.alive)
         {
-            anim.Play("Attack");
-            yield return new WaitForSeconds(attackSpeed);
-
-            if (!gameObject.activeSelf)
-            {
-                yield break;
-            }
-
-            // IMPORTANT - whilst it is attacking, it checks if the targetUnit is the same as the 'firerate' seoncds ago, because targetUnit can change by other places of the code , if archer decode to change enemy for a reason
-            // we also have to check if the target is within range at all times, otherwise we will be attacking a unit outside the range, 
-            // we also check if the unit is also alive
-            if (targetUnit == initialTargetUnit && IsTargetWithinAttackRange() && targetUnit.alive)
-            {
-                
-                ShootArrow();   
-            }
-            else
-            {
-                ResetValues();
-            }
-            
+            ShootArrow();
+            // Optionally, add attack effects or sound here
         }
-        isCoroutineRunning = false;
-        yield return null;
-    }
-    /*
-    public override void Attack()
-    {
-        //Debug.Log("checking to see if within attack range as archer");
-
-
-        if (!isCoroutineRunning)
-        {
-            StartCoroutine(AttackAnimation());
-        }
-
         else
         {
-            DecideEnemy();
-            isAttacking = false;
+            ResetValues();
         }
     }
-    public override IEnumerator AttackAnimation()
-    {
-        isCoroutineRunning = true;
-        Unit initialTargetUnit = targetUnit;
 
-        while (isAttacking)
-        {
-            anim.Play("Attack");
-            yield return new WaitForSeconds(fireRate);
-
-            if (!gameObject.activeSelf)
-            {
-                yield break;
-            }
-            if (targetUnit == initialTargetUnit)
-            {
-                if (IsTargetWithinAttackRange() && targetUnit.alive)
-                {
-                    targetLocation = transform.position;
-                    ShootArrow();
-
-                }
-                else
-                {
-                    isAttacking = false;
-                    anim.Play("Walk");
-                }
-            }
-        }
-        isCoroutineRunning = false;
-        yield return null;
-    }
-    */
+    
     private void ShootArrow()
     {
         
@@ -284,8 +214,7 @@ public class Archer : DamageUnit
     {
         base.Die();
         tv.rearLineUnits.Remove(gameObject);
-        StopAllCoroutines();
-        StartCoroutine(DeathAnimation());
+        
     }
     // Testing functions
     void HandleMovement()

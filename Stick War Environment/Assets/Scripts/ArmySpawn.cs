@@ -15,6 +15,11 @@ public class ArmySpawn : MonoBehaviour
     public float horizontal;
     public float vertical;
 
+    [Header("Spawn Cooldown")]
+    public float spawnCooldown; // Cooldown time in seconds for spawning
+    private float spawnCooldownTimer = 0.0f; // Timer to track cooldown
+    private bool onCooldown = false; // Flag to indicate if you are on cooldown for spamming spawning units
+
     [Header("Debug")]
     public GameObject armySoldier;
     public bool testOutSpawn;
@@ -26,7 +31,7 @@ public class ArmySpawn : MonoBehaviour
     void Start()
     {
         tv = GetComponentInParent<TeamVariables>();
-        SpawnUnit(gv.miner);
+        spawnCooldown = gv.spawnCooldown;
         if(testOutSpawn)
         testSpawnUnit();
     }
@@ -34,7 +39,15 @@ public class ArmySpawn : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (onCooldown)
+        {
+            spawnCooldownTimer -= Time.deltaTime;
+            if (spawnCooldownTimer <= 0)
+            {
+                onCooldown = false;
+                spawnCooldownTimer = 0;
+            }
+        }
     }
 
     
@@ -66,6 +79,9 @@ public class ArmySpawn : MonoBehaviour
                 tv.rearLineUnits.Add(spawnedUnit);
             }
 
+            onCooldown = true;
+            spawnCooldownTimer = spawnCooldown;
+
             return true;
         }
         else
@@ -77,7 +93,8 @@ public class ArmySpawn : MonoBehaviour
     }
     bool CanSpawn(GameObject unit) 
     {
-        if (tv.units >= gv.maxUnits)
+        //Debug.Log($"tv: {tv}, gv: {gv}, onCooldown: {onCooldown}, team {tv.team}");
+        if (tv.units >= gv.maxUnits || onCooldown)
         {
             return false;
         }

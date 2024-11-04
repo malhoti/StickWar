@@ -42,6 +42,7 @@ public class Miner : Unit
         anim = GetComponentInChildren<Animator>();
         FindNextTask();
         anim.Play("Walk");
+        
         //targetLocation = transform.position;
     }
 
@@ -232,7 +233,7 @@ public class Miner : Unit
     private void HandleNotAtTargetPosition(float distanceToUnloadPos, float distanceToTarget, Vector2 unloadPos, Vector2 retreatPos)
     {
         isUnloading = false;
-
+        anim.Play("Walk");
 
         if (storage > 0 && storage < maxStorage)
         {
@@ -301,7 +302,7 @@ public class Miner : Unit
         {
             //Debug.Log("I am Mining");
             isMining = true;
-            StartCoroutine(MineAnimation());
+            
         }
 
         if (storage >= maxStorage)
@@ -318,31 +319,64 @@ public class Miner : Unit
         //    FindNextTask();
         //}
     }
+
+    /// <summary>
+    /// Called by the mining animation event to apply mining effects.
+    /// </summary>
+    public void OnMine()
+    {
+        if (targetGold != null && targetGold.capacity > 0)
+        {
+            targetGold.capacity--;
+            storage++;
+            storageBar.UpdateStorageBar(storage, maxStorage, flip);
+
+            if (storage >= maxStorage)
+            {
+                targetLocation = tv.unloadPos.transform.position;
+            }
+
+            if (targetGold.capacity <= 0)
+            {
+                StopMining();
+                FindNextTask();
+            }
+        }
+    }
     private void Unload()
     {
       
-        anim.Play("Idle");
+        anim.Play("Unload");
 
         if (!isUnloading)
         {
             //Debug.Log("Unloading");
-            isUnloading = true;
-            //flip = true;
-            StartCoroutine(UnloadAnimation());
+            isUnloading = true;        
         }
 
         if (storage == 0)
-        {
-            //Debug.Log("Storage empty");
-            StopCoroutine(UnloadAnimation());
+        {          
             isUnloading = false;
             FindNextTask();
         }
     }
 
-    private void StopMining()
+    /// <summary>
+    /// Called by the unloading animation event to complete unloading.
+    /// </summary>
+    public void OnUnload()
     {
-        StopCoroutine(MineAnimation());
+        if (storage > 0)
+        {
+            tv.gold += storage * gv.valuePerGold;
+            storage = 0;
+            storageBar.UpdateStorageBar(storage, maxStorage, flip);
+            isUnloading = false;
+            FindNextTask();
+        }
+    }
+    private void StopMining()
+    {      
         isMining = false;
         if (targetGold) { 
             if (miningPosition == 1)
@@ -354,72 +388,16 @@ public class Miner : Unit
             }
             targetGold.miningSpotsUsed--;
             targetGold = null;
-        } 
-        
-    }
-
-   
-
-
-    public IEnumerator MineAnimation()
-    {
-        Gold initialTargetGold = targetGold;
-
-        while (isMining)
-        {
-            yield return new WaitForSeconds(mineSpeed);
-
-            if (storage >= maxStorage)
-            {
-                yield break;
-            }
-
-            if (targetGold == initialTargetGold)
-            {
-                if (targetGold)
-                {
-                    targetGold.capacity--;
-                    storage++;
-                }
-                else
-                {
-                    isMining = false;
-                    anim.Play("Walk");
-                }
-            }
-        }
-    }
-
-    public IEnumerator UnloadAnimation()
-    {
-        yield return new WaitForSeconds(2);
-        if (Vector2.Distance(transform.position, (Vector2)tv.unloadPos.transform.position) < 0.2f) { 
-            tv.gold += storage * gv.valuePerGold;
-            storage = 0;
-        }
+        }       
     }
 
 
     protected override void Die()
     {
         base.Die();
-        if (targetGold)
-        {
-            if (miningPosition == 1)
-            {
-                targetGold.spot1Available = true;
-            }
-            else
-            {
-                targetGold.spot2Available = true;
-            }
-        }
-        
-        
-        isMining = false;
+        StopMining();
         tv.gathererUnits.Remove(gameObject);
-        StopAllCoroutines();
-        StartCoroutine(DeathAnimation());
+        
     }
     
 

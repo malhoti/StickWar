@@ -18,7 +18,7 @@ public class Unit : MonoBehaviour
     [Header("Attributes")]
     public float moveSpeed;
     public int health;
-    public int maxHealth;
+    private int maxHealth;
 
     [Header("States")]
     public Vector2 targetLocation;
@@ -45,7 +45,7 @@ public class Unit : MonoBehaviour
     public virtual void Start()
     {
         alive = true;
-        health = maxHealth;
+        maxHealth = health;
         flip = false;
         gv = FindObjectOfType<GlobalVariables>().GetComponent<GlobalVariables>();
         rb = GetComponent<Rigidbody2D>();
@@ -103,24 +103,18 @@ public class Unit : MonoBehaviour
     {
         alive = false;
         targetLocation = transform.position;// stand where you are
+        anim.Play("Dead");
         //gameObject.SetActive(false);
     }
 
 
-    public virtual IEnumerator DeathAnimation()
+    public void DeathAnimation()
     {
-        anim.Play("Dead");
-        yield return new WaitForSeconds(3);
+        
+        
         Destroy(gameObject);
     }
     
-   
-    
-
-
-
-
-
 
     /// <summary>
     /// This returns a list of Units that it detects

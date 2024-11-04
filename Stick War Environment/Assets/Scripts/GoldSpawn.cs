@@ -11,12 +11,12 @@ public class GoldSpawn : MonoBehaviour
     public float horizontal;
     public float vertical;
 
-    private int currentGoldOres = 0;
+    public int currentGoldOres = 0;
     // Start is called before the first frame update
     void Awake()
     {
         tv = GetComponentInParent<TeamVariables>();
-        SpawnGoldOres();
+        
         
     }
 
@@ -28,17 +28,19 @@ public class GoldSpawn : MonoBehaviour
         
     }
 
-    void SpawnGoldOres()
+    public void SpawnGoldOres()
     {
         float halfHeight = vertical / 2;
         float halfWidth = horizontal / 2;
+
+        
         while (currentGoldOres < maxGoldOres)
         {
             Vector2 spawnPosition = new Vector2(
                 Random.Range(transform.position.x - halfWidth, transform.position.x + halfWidth),
                 Random.Range(transform.position.y - halfHeight, transform.position.y + halfHeight));
   
-            GameObject gold = Instantiate(goldPrefab, spawnPosition, Quaternion.identity,tv.transform);
+            GameObject gold = Instantiate(goldPrefab, spawnPosition, Quaternion.identity,transform);
             currentGoldOres++;
 
             tv.goldList.Add(gold.GetComponent<Gold>());

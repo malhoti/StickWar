@@ -15,6 +15,8 @@ public class UI : MonoBehaviour
     public TMP_Text score1;
     public TMP_Text score2;
 
+    public TMP_Text time;
+
     public Button retreat1;
     public Button retreat2;
 
@@ -66,6 +68,11 @@ public class UI : MonoBehaviour
     {
         score1.text = ("Gold : "+ tv1.gold.ToString());
         score2.text = ("Gold : " + tv2.gold.ToString());
+
+
+        int minutes = Mathf.FloorToInt(gv.time / 60f);
+        int seconds = Mathf.FloorToInt(gv.time % 60f);
+        time.text = $"Time: {minutes:0}:{seconds:00}";
 
     }
     void Retreat1Pressed()

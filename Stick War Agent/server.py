@@ -13,8 +13,8 @@ from DQN_utils import DQNAgent
 
 
 # Hyperparameters
-input_dim = 12 # Example input dimension, adjust based on your state vector
-output_dim = 6  # Example output dimension (number of actions)
+input_dim = 13 # Example input dimension, adjust based on your state vector
+output_dim = 7  # Example output dimension (number of actions)
 gamma = 0.99  # Discount factor for future rewards
 batch_size = 64
 epsilon = 1.0  # Initial epsilon for exploration
@@ -26,7 +26,7 @@ buffer_capacity = 10000
 learning_rate = 0.001
 
 model_save_frequency = 100
-
+render_episode_frequency = 10
 
 
 #agent = DQNAgent(dqn_model, target_dqn_model, optimizer, replay_memory, device, output_dim, gamma)
@@ -89,7 +89,8 @@ def handle_client(conn, addr):
                     state_dict['enemy_miners'],
                     state_dict['enemy_swordsmen'],
                     state_dict['enemy_archers'],
-                    state_dict['enemies_in_vicinity']
+                    state_dict['enemies_in_vicinity'],
+                    state_dict['episode_time']
                 ], dtype=np.float32)
             
             if step % 64 == 0:
@@ -98,10 +99,15 @@ def handle_client(conn, addr):
             # Select action
             action = agent.select_action(state_values, epsilon)
 
+            render_episode = False
+            if step %render_episode_frequency ==0:
+                render_episode = True
+
             # Send the selected action back to Unity
             response = json.dumps({
                 "agent_id": agent_id,
-                "action": action
+                "action": action,
+                "render" : render_episode
             })
             conn.sendall(response.encode())
 
@@ -125,7 +131,8 @@ def handle_client(conn, addr):
                     next_state_dict['enemy_miners'],
                     next_state_dict['enemy_swordsmen'],
                     next_state_dict['enemy_archers'],
-                    next_state_dict['enemies_in_vicinity']
+                    next_state_dict['enemies_in_vicinity'],
+                    next_state_dict['episode_time']
                 ], dtype=np.float32)
 
             # Store experience in replay memory

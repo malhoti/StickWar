@@ -189,6 +189,7 @@ GameObject:
   - component: {fileID: 6794234319734596072}
   - component: {fileID: 2578638987947150344}
   - component: {fileID: 4686170337407415807}
+  - component: {fileID: 5080584177252831957}
   m_Layer: 0
   m_Name: Tower
   m_TagString: Untagged
@@ -204,7 +205,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6000469660677967353}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -35.8, y: -10.1, z: -10.129264}
   m_LocalScale: {x: 133.86758, y: 649.7858, z: 1}
   m_ConstrainProportionsScale: 0
@@ -283,7 +284,6 @@ MonoBehaviour:
   healthBar: {fileID: 7850687310775660874}
   moveSpeed: 0
   health: 1000
-  maxHealth: 1000
   targetLocation: {x: 0, y: 0}
   flip: 0
   alive: 1
@@ -293,6 +293,7 @@ MonoBehaviour:
   attackWidth: 0.84
   attackHeight: 5.95
   attackOffset: {x: 0, y: 3.14}
+  positionThreshold: 0
   colliders: []
   targetUnits: []
 --- !u!61 &4686170337407415807
@@ -340,6 +341,27 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.04, y: 0.040129248}
   m_EdgeRadius: 0
+--- !u!95 &5080584177252831957
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6000469660677967353}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 59825d0306d6ab64f80eca8e5f17fd13, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &6366040422596133700
 GameObject:
   m_ObjectHideFlags: 0

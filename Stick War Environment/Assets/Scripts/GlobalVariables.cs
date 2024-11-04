@@ -9,6 +9,8 @@ public class GlobalVariables : MonoBehaviour
     [Header("Global Settings")]
     public int valuePerGold;
     public int maxUnits;
+    public bool gameOver;
+    public float spawnCooldown;
     [Tooltip("Gold recieved every 3 seconds")]
     public int passiveGoldRate;
     
@@ -32,12 +34,15 @@ public class GlobalVariables : MonoBehaviour
     public TeamVariables team2;
 
     public float timescale;
+
+    public float time;
     
 
     void Awake()
     {
         team1 = GameObject.Find("Team1").GetComponent<TeamVariables>();
         team2 = GameObject.Find("Team2").GetComponent<TeamVariables>();
+        gameOver = false;
 
     }
 
@@ -46,6 +51,14 @@ public class GlobalVariables : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        time += Time.deltaTime;
+        if (gameOver)
+        {
+            team1.ResetEnvironment();
+            team2.ResetEnvironment();
+            gameOver = false;
+            time = 0;
+        }
         Time.timeScale = timescale;
     }
     

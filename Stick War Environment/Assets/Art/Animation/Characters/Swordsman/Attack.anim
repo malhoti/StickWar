@@ -23,7 +23,7 @@ AnimationClip:
     - time: 0
       value: {fileID: -262449010, guid: 97c6173151b791648a0c405c5b7b4ed4, type: 3}
     - time: 1
-      value: {fileID: -2087612123, guid: 97c6173151b791648a0c405c5b7b4ed4, type: 3}
+      value: {fileID: -262449010, guid: 97c6173151b791648a0c405c5b7b4ed4, type: 3}
     - time: 2
       value: {fileID: -2087612123, guid: 97c6173151b791648a0c405c5b7b4ed4, type: 3}
     attribute: m_Sprite
@@ -49,7 +49,7 @@ AnimationClip:
       isSerializeReferenceCurve: 0
     pptrCurveMapping:
     - {fileID: -262449010, guid: 97c6173151b791648a0c405c5b7b4ed4, type: 3}
-    - {fileID: -2087612123, guid: 97c6173151b791648a0c405c5b7b4ed4, type: 3}
+    - {fileID: -262449010, guid: 97c6173151b791648a0c405c5b7b4ed4, type: 3}
     - {fileID: -2087612123, guid: 97c6173151b791648a0c405c5b7b4ed4, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
@@ -75,4 +75,11 @@ AnimationClip:
   m_EulerEditorCurves: []
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
-  m_Events: []
+  m_Events:
+  - time: 2
+    functionName: OnAttackHit
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0

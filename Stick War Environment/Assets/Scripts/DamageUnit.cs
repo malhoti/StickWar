@@ -109,7 +109,7 @@ public class DamageUnit : Unit
             DecideEnemy();
             if (IsTargetWithinAttackRange())
             {
-                Debug.Log("hello");
+               
                 targetLocation = transform.position; // if you are attacking stand still
                 isAttacking = true;
             }
@@ -143,7 +143,7 @@ public class DamageUnit : Unit
             {
                 
                 targetLocation = transform.position; // if you are attacking stand still
-                isAttacking = true;
+                
             }
         }
         else
@@ -208,15 +208,11 @@ public class DamageUnit : Unit
         Vector3 attackPosition = transform.position + (Vector3)attackOffset;
         //Vector3 attackSize = new Vector2(Mathf.Max(attackWidth,targetUnit.GetComponent<SpriteRenderer>().bounds.size.x), attackHeight);
         Vector3 attackSize = new Vector2(attackWidth, attackHeight);
-
-        
+  
         Vector3 targetAttackPosition = targetUnit.transform.position + (Vector3)targetUnit.attackOffset;
-        
-
         
         Bounds attackBounds = new Bounds(attackPosition, attackSize);
         Bounds targetAttackBounds = new Bounds(targetAttackPosition, attackSize);
-       
 
         // Check if the target's position is within the bounds
         if (attackBounds.Intersects(targetAttackBounds))
@@ -225,52 +221,32 @@ public class DamageUnit : Unit
             return true;
             // Perform attack or other actions here
         }
-        isAttacking = false;
+        //isAttacking = false;
         return false;
     }
 
     public virtual void Attack()
     {
-
-        if (!isCoroutineRunning)
-        {
-            StartCoroutine(AttackAnimation());
-        }
-    }
-
-    public virtual IEnumerator AttackAnimation()
-    {
-        isCoroutineRunning = true;
-        Unit initialTargetUnit = targetUnit;
-
-        while (isAttacking)
-        {
-            anim.Play("Attack");
-            yield return new WaitForSeconds(attackSpeed);
-
-            if (!gameObject.activeSelf)
-            {
-                yield break;
-            }
-
-            // IMPORTANT - whilst it is attacking, it checks if the targetUnit is the same as the 'firerate' seoncds ago, because targetUnit can change by other places of the code , if archer decode to change enemy for a reason
-            // we also have to check if the target is within range at all times, otherwise we will be attacking a unit outside the range, 
-            // we also check if the unit is also alive
-            if (targetUnit == initialTargetUnit && IsTargetWithinAttackRange() && targetUnit.alive)
-            {
-
-                targetUnit.TakeDamage(attackDamage);
-            }
-            else
-            {
-                ResetValues();
-            }
-
-        }
-        isCoroutineRunning = false;
-        yield return null;
+        anim.Play("Attack");
         
     }
+
+    /// <summary>
+    /// Called by the animation event when the attack should deal damage.
+    /// </summary>
+    public virtual void OnAttackHit()
+    {
+        if (targetUnit != null && targetUnit.alive)
+        {
+            targetUnit.TakeDamage(attackDamage);
+            // Optionally, add attack effects or sound here
+        }
+        else
+        {
+            ResetValues();
+        }
+    }
+
 
     /// <summary>
     /// This function resets all variables that are linked to attacking, such as target units and sets attacking to false

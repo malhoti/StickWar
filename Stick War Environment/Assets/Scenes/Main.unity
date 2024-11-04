@@ -1314,6 +1314,7 @@ MonoBehaviour:
   maxUnits: 50
   horizontal: 7.84
   vertical: 18.7
+  spawnCooldown: 2
   armySoldier: {fileID: 8542004769833073021, guid: 62ae4eb1574e7934dabfece3445d9d50, type: 3}
   testOutSpawn: 0
 --- !u!1 &277975043
@@ -1509,14 +1510,6 @@ PrefabInstance:
     - target: {fileID: 6000469660677967353, guid: e1dc9f6d8e64bbb4db7def7cdb7cb112, type: 3}
       propertyPath: m_Name
       value: Tower
-      objectReference: {fileID: 0}
-    - target: {fileID: 6384437813136383613, guid: 02586ad08d54b634689fb00c1415f9bd, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6384437813136383613, guid: 02586ad08d54b634689fb00c1415f9bd, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1834,6 +1827,7 @@ MonoBehaviour:
   maxGoldOres: 2
   horizontal: 6.6
   vertical: 17.2
+  currentGoldOres: 0
 --- !u!1 &583993044
 GameObject:
   m_ObjectHideFlags: 0
@@ -2319,6 +2313,141 @@ MonoBehaviour:
   maxGoldOres: 2
   horizontal: 6.6
   vertical: 17.2
+  currentGoldOres: 0
+--- !u!1 &754021610
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 754021611}
+  - component: {fileID: 754021613}
+  - component: {fileID: 754021612}
+  m_Layer: 5
+  m_Name: Time
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &754021611
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 754021610}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1032616194}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -97, y: 459}
+  m_SizeDelta: {x: 200, y: 50}
+  m_Pivot: {x: 0.5, y: 0.49999988}
+--- !u!114 &754021612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 754021610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: 
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 36
+  m_fontSizeBase: 36
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 1
+  m_VerticalAlignment: 256
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_enableWordWrapping: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 1
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &754021613
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 754021610}
+  m_CullTransparentMesh: 1
 --- !u!1 &755789888
 GameObject:
   m_ObjectHideFlags: 0
@@ -2817,6 +2946,7 @@ MonoBehaviour:
   tv2: {fileID: 1010853698}
   score1: {fileID: 1620496822}
   score2: {fileID: 34515981}
+  time: {fileID: 754021612}
   retreat1: {fileID: 993792146}
   retreat2: {fileID: 872720673}
   defend1: {fileID: 767733487}
@@ -3908,8 +4038,13 @@ MonoBehaviour:
   towerArcherPos: {fileID: 1375517500}
   defendMaxPos: {fileID: 1858965682}
   spawn: {fileID: 1764888443}
+  goldSpawns:
+  - {fileID: 1096779916}
+  - {fileID: 1485680059}
+  - {fileID: 2132615923}
+  tower: {fileID: 1705159416}
   gold: 300
-  health: 0
+  health: 500
   units: 0
   goldList: []
   gathererUnits: []
@@ -3956,7 +4091,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1010853697}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a1c87d27c04c3ec4c87fa728414b644f, type: 3}
   m_Name: 
@@ -4147,6 +4282,7 @@ RectTransform:
   - {fileID: 792987367}
   - {fileID: 1229936734}
   - {fileID: 1070089557}
+  - {fileID: 754021611}
   m_Father: {fileID: 819510091}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -4387,6 +4523,7 @@ MonoBehaviour:
   maxGoldOres: 2
   horizontal: 6.6
   vertical: 17.2
+  currentGoldOres: 0
 --- !u!1 &1103380317
 GameObject:
   m_ObjectHideFlags: 0
@@ -5077,6 +5214,7 @@ MonoBehaviour:
   maxGoldOres: 2
   horizontal: 6.6
   vertical: 17.2
+  currentGoldOres: 0
 --- !u!1 &1193824629
 GameObject:
   m_ObjectHideFlags: 0
@@ -5936,6 +6074,7 @@ MonoBehaviour:
   maxGoldOres: 2
   horizontal: 6.6
   vertical: 17.2
+  currentGoldOres: 0
 --- !u!1 &1576187204
 GameObject:
   m_ObjectHideFlags: 0
@@ -6645,6 +6784,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 571122615346411526, guid: e1dc9f6d8e64bbb4db7def7cdb7cb112, type: 3}
   m_PrefabInstance: {fileID: 431837095}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1705159416 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2578638987947150344, guid: e1dc9f6d8e64bbb4db7def7cdb7cb112, type: 3}
+  m_PrefabInstance: {fileID: 431837095}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdaa13c4ae018774a9774e2046dfefea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1720782880
 GameObject:
   m_ObjectHideFlags: 0
@@ -6676,15 +6826,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gv: {fileID: 1901931861}
-  team: -10
+  team: 1
   retreatPos: {fileID: 277975044}
   unloadPos: {fileID: 1193824630}
   defendPos: {fileID: 2086090618}
   towerArcherPos: {fileID: 1461838429}
   defendMaxPos: {fileID: 2087019704}
   spawn: {fileID: 264526639}
+  goldSpawns:
+  - {fileID: 730901583}
+  - {fileID: 1141809912}
+  - {fileID: 562577355}
+  tower: {fileID: 1827771684}
   gold: 300
-  health: 0
+  health: 500
   units: 0
   goldList: []
   gathererUnits: []
@@ -6731,7 +6886,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1720782880}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a1c87d27c04c3ec4c87fa728414b644f, type: 3}
   m_Name: 
@@ -6855,10 +7010,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gv: {fileID: 1901931861}
-  tv: {fileID: 0}
+  tv: {fileID: 1010853698}
   maxUnits: 50
   horizontal: 7.84
   vertical: 18.7
+  spawnCooldown: 2
   armySoldier: {fileID: 8542004769833073021, guid: 62ae4eb1574e7934dabfece3445d9d50, type: 3}
   testOutSpawn: 0
 --- !u!4 &1764888444
@@ -6997,6 +7153,17 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1827771684 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2578638987947150344, guid: e1dc9f6d8e64bbb4db7def7cdb7cb112, type: 3}
+  m_PrefabInstance: {fileID: 6929445005641228572}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdaa13c4ae018774a9774e2046dfefea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1836166619
 GameObject:
   m_ObjectHideFlags: 0
@@ -7227,6 +7394,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   valuePerGold: 10
   maxUnits: 20
+  gameOver: 0
+  spawnCooldown: 0.1
   passiveGoldRate: 10
   miner: {fileID: 3673222441977379106, guid: 2fe2bff0e6781f04994da4505dc9279f, type: 3}
   swordsman: {fileID: 8542004769833073021, guid: 62ae4eb1574e7934dabfece3445d9d50, type: 3}
@@ -7239,7 +7408,8 @@ MonoBehaviour:
   verticalSpacing: 3
   team1: {fileID: 0}
   team2: {fileID: 0}
-  timescale: 1
+  timescale: 10
+  time: 0
 --- !u!4 &1901931862
 Transform:
   m_ObjectHideFlags: 0
@@ -8243,6 +8413,7 @@ MonoBehaviour:
   maxGoldOres: 2
   horizontal: 6.6
   vertical: 17.2
+  currentGoldOres: 0
 --- !u!1001 &6929445005641228572
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8290,6 +8461,10 @@ PrefabInstance:
     - target: {fileID: 571122615346411526, guid: e1dc9f6d8e64bbb4db7def7cdb7cb112, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2578638987947150344, guid: e1dc9f6d8e64bbb4db7def7cdb7cb112, type: 3}
+      propertyPath: health
+      value: 1000
       objectReference: {fileID: 0}
     - target: {fileID: 4165089366742366553, guid: e1dc9f6d8e64bbb4db7def7cdb7cb112, type: 3}
       propertyPath: m_AnchorMax.x

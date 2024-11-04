@@ -54,8 +54,7 @@ public class Swordsman : DamageUnit
     {
         base.Die();
         tv.frontLineUnits.Remove(gameObject);
-        StopAllCoroutines();
-        StartCoroutine(DeathAnimation());
+        anim.Play("Dead");
     }
     // Testing functions
     void HandleMovement()
