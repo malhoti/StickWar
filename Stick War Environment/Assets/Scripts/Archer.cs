@@ -150,7 +150,7 @@ public class Archer : DamageUnit
 
     public override void Attack()
     {
-        targetLocation = transform.position;
+        //targetLocation = transform.position;
         anim.Play("Attack");
     }
 
@@ -161,12 +161,13 @@ public class Archer : DamageUnit
     /// </summary>
     public override void OnAttackHit()
     {
+        
         if (targetUnit != null && targetUnit.alive)
         {
             ShootArrow();
             // Optionally, add attack effects or sound here
         }
-        else
+        else 
         {
             ResetValues();
         }
@@ -185,7 +186,7 @@ public class Archer : DamageUnit
         // Instantiate the arrow at the shoot point
         GameObject arrowInstance = Instantiate(arrowPrefab, shootPoint.position, Quaternion.identity,shootPoint);
 
-        
+        arrowInstance.GetComponent<Arrow>().target = targetUnit;
 
         // Calculate the initial velocity for a parabolic trajectory
         Rigidbody2D rb = arrowInstance.GetComponent<Rigidbody2D>();

@@ -76,6 +76,8 @@ def handle_client(conn, addr):
             reward = data_dict.get('reward')
             done = data_dict.get('done')
 
+            if(done):
+                print("asdfasdf")
             # Prepare state values for DQN input
             state_values = np.array([
                     state_dict['gold'],
@@ -93,14 +95,14 @@ def handle_client(conn, addr):
                     state_dict['episode_time']
                 ], dtype=np.float32)
             
-            if step % 64 == 0:
-                print(f"Message received from {addr}: {data_dict}")
+            #if step % 64 == 0:
+                #print(f"Message received from {addr}: {data_dict}")
 
             # Select action
             action = agent.select_action(state_values, epsilon)
 
-            render_episode = False
-            if step %render_episode_frequency ==0:
+            
+            if episode %render_episode_frequency ==0:
                 render_episode = True
 
             # Send the selected action back to Unity
@@ -147,7 +149,7 @@ def handle_client(conn, addr):
 
             if step % model_save_frequency == 0:
                     torch.save(dqn_model.state_dict(), model_path)
-                    print(f"Model saved for agent {agent_id} after {step} steps.")
+                    #print(f"Model saved for agent {agent_id} after {step} steps.")
 
             # Decay epsilon
             if epsilon > epsilon_min:
@@ -162,6 +164,8 @@ def handle_client(conn, addr):
                 total_reward = 0
                 episode += 1
                 step = 0  # Optionally reset step for new episode
+                render_episode = False
+                print(f"Message received from {agent_id}: {data_dict} : this is next data\n\n{next_data_dict}")
 
             # Update data for next iteration
             data = next_data

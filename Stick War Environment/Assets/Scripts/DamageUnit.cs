@@ -55,6 +55,7 @@ public class DamageUnit : Unit
     public virtual void Retreat()
     {
         ResetValues();
+        anim.Play("Walk");
         targetLocation.x = tv.retreatPos.transform.position.x;
         if (Vector2.Distance(transform.position, targetLocation) < 1f)
         {
@@ -73,10 +74,10 @@ public class DamageUnit : Unit
 
     public void Defend()
     {
+        
         // whilst defending, units will always scout for enemies
         targetUnits = FindEnemies();
         
-
         // this checks if unit reaches the max range it can chase enemies and flags it
         if (((tv.team == 1 && transform.position.x > tv.defendMaxPos.position.x) || (tv.team == 2 && transform.position.x < tv.defendMaxPos.position.x)))
         {
@@ -86,41 +87,42 @@ public class DamageUnit : Unit
 
         // if unit doesnt have a target or it reached the end, it will go back to the formation
         if (targetUnits.Count == 0 || reachedDefendMaxPos)
-        {
-            
+        {            
             targetLocation = GetPositionInFormation();
             if (Vector2.Distance(transform.position, targetLocation) < 0.2f)
-            {
-               
+            {              
                 ResetValues();
                 reachedDefendMaxPos = false;
                 anim.Play("Idle");
                 flip = tv.team != 1;
             }
+            else
+            {
+                anim.Play("Walk");            }
             return;
         }
 
      
-
         // if it does detect enemies, and it isnt currently attacking, then decide for which enemy to go to 
         if (!isAttacking)
         {
-
             DecideEnemy();
             if (IsTargetWithinAttackRange())
-            {
-               
+            {            
                 targetLocation = transform.position; // if you are attacking stand still
                 isAttacking = true;
             }
         }
-        else
+        else if (targetUnit != null && IsTargetWithinAttackRange())
         {
+            // Continue attacking if within range
             Attack();
         }
-
-
-
+        else
+        {
+            // Reset if the target moves out of range
+            ResetValues();
+        }
     }
 
     public void Advance()
@@ -137,26 +139,25 @@ public class DamageUnit : Unit
                 March();
                 return;
             }
-
-            
+          
             if (IsTargetWithinAttackRange())
             {
-                
-                targetLocation = transform.position; // if you are attacking stand still
-                
+                isAttacking = true;
+                targetLocation = transform.position; // if you are attacking stand still               
             }
         }
-        else
+        else if (targetUnit != null && IsTargetWithinAttackRange())
         {
             Attack();
         }
+        else
+        {
+            ResetValues();
+        }
     }
-
-    
 
     public void March()
     {
-
         if (tv.team == 1)
         {
             if ((targetLocation.x - transform.position.x) < positionThreshold)
@@ -173,10 +174,8 @@ public class DamageUnit : Unit
                 //GetPositionInFormation();
             }
         }
-
-
-
     }
+
     /// <summary>
     /// Decide which enemy to attack from the list of targets, this will be different for each type of unit, and sets the targetlocation
     /// </summary>
@@ -194,10 +193,8 @@ public class DamageUnit : Unit
             }
             if (targetUnit.tv.state == State.Retreat && enemyTower != null)
             {
-                targetUnit = enemyTower;
-                
-            }
-            
+                targetUnit = enemyTower;               
+            }           
             targetLocation = new Vector2(targetUnit.transform.position.x, targetUnit.transform.position.y + targetUnit.attackOffset.y);
 
         }
@@ -205,6 +202,9 @@ public class DamageUnit : Unit
 
     public bool IsTargetWithinAttackRange()
     {
+
+        if (targetUnit == null) return false;
+
         Vector3 attackPosition = transform.position + (Vector3)attackOffset;
         //Vector3 attackSize = new Vector2(Mathf.Max(attackWidth,targetUnit.GetComponent<SpriteRenderer>().bounds.size.x), attackHeight);
         Vector3 attackSize = new Vector2(attackWidth, attackHeight);
@@ -212,7 +212,7 @@ public class DamageUnit : Unit
         Vector3 targetAttackPosition = targetUnit.transform.position + (Vector3)targetUnit.attackOffset;
         
         Bounds attackBounds = new Bounds(attackPosition, attackSize);
-        Bounds targetAttackBounds = new Bounds(targetAttackPosition, attackSize);
+        Bounds targetAttackBounds = new Bounds(targetAttackPosition, new Vector3(3f, 2f));
 
         // Check if the target's position is within the bounds
         if (attackBounds.Intersects(targetAttackBounds))
@@ -221,14 +221,25 @@ public class DamageUnit : Unit
             return true;
             // Perform attack or other actions here
         }
-        //isAttacking = false;
-        return false;
+        else
+        {
+            isAttacking = false;
+            return false;
+        }
     }
 
     public virtual void Attack()
     {
         anim.Play("Attack");
-        
+
+        if (targetUnit.transform.position.x < transform.position.x)
+        {
+            flip = true;
+        }
+        else
+        {
+            flip = false;   
+        }
     }
 
     /// <summary>
@@ -241,7 +252,7 @@ public class DamageUnit : Unit
             targetUnit.TakeDamage(attackDamage);
             // Optionally, add attack effects or sound here
         }
-        else
+        else 
         {
             ResetValues();
         }
@@ -257,7 +268,8 @@ public class DamageUnit : Unit
         targetUnit = null;
         isAttacking = false;
         isCoroutineRunning = false;
-        //anim.Play("Idle");
+        
+        
     }
 
     private void OnDrawGizmos()
@@ -268,20 +280,12 @@ public class DamageUnit : Unit
         Gizmos.DrawWireCube(transform.position + (Vector3)attackOffset, new Vector3(attackWidth, attackHeight));
         Gizmos.color = Color.blue;
         Gizmos.DrawWireCube(targetLocation, new Vector3(1, 1));
-        Gizmos.color = Color.magenta;
+        Gizmos.color = Color.yellow;
         Vector3 attackPosition = transform.position + (Vector3)attackOffset;
-        Vector3 targetAttackPosition = targetUnit.transform.position + (Vector3)targetUnit.attackOffset;
-        Vector3 attackSize = new Vector2(attackWidth, attackHeight);
+        Vector2 targetAttackPosition = targetUnit.transform.position + (Vector3)targetUnit.attackOffset;
         
 
-
-
-
-
-        Bounds attackBounds = new Bounds(attackPosition, attackSize);
-        Bounds targetAttackBounds = new Bounds(targetAttackPosition, attackSize);
-
-        Gizmos.DrawWireCube(targetAttackPosition, attackSize);
+        Gizmos.DrawWireCube(targetAttackPosition, new Vector3(3f, 0.1f));
     }
 
 

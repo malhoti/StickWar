@@ -9,7 +9,7 @@ public class Arrow : MonoBehaviour
     public TeamVariables tv;
     public Archer archer;
     Rigidbody2D rb;
-
+    public Unit target;
     // Start is called before the first frame update
     void Start()
     {
@@ -23,13 +23,13 @@ public class Arrow : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Unit target = collision.GetComponent<Unit>();
-        if (target != null)
+        Unit hitUnit = collision.GetComponent<Unit>();
+        if (hitUnit != null && hitUnit == target) // Check if hitUnit is the intended target
         {
-            if (target.tv.team != tv.team)
+            if (hitUnit.tv.team != tv.team)
             {
                 // Apply damage to the target
-                target.TakeDamage(damage);
+                hitUnit.TakeDamage(damage);
 
                 // Destroy the arrow
                 Destroy(gameObject);

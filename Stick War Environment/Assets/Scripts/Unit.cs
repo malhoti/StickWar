@@ -91,11 +91,11 @@ public class Unit : MonoBehaviour
 
     public virtual void TakeDamage(int damage)
     {
+
         health -= damage;
         if (health <= 0)
         {
-            
-            Die();
+            if (alive) Die();
         }
     }
 
@@ -103,6 +103,7 @@ public class Unit : MonoBehaviour
     {
         alive = false;
         targetLocation = transform.position;// stand where you are
+        tv.units--;
         anim.Play("Dead");
         //gameObject.SetActive(false);
     }

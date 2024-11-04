@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System;
 using System.Collections.Concurrent;
 using System.Text;
+using Unity.VisualScripting;
 
 public class RLAgent : MonoBehaviour
 {
@@ -31,6 +32,8 @@ public class RLAgent : MonoBehaviour
     private int _enemyTowerHealth;
     private int _unitCount;
     private int _enemyUnitCount;
+
+    private bool renderEpisodeStarted;
     // Start is called before the first frame update
     private void Awake()
     {
@@ -42,7 +45,7 @@ public class RLAgent : MonoBehaviour
 
         tv = gameObject.GetComponent<TeamVariables>();
         agentId = tv.team;
-
+        renderEpisodeStarted = true;
 
         if (tv.team == 1)
         {
@@ -96,14 +99,14 @@ public class RLAgent : MonoBehaviour
         }
     }
 
-    void ReceiveFromPython()
+    async void ReceiveFromPython()
     {
         if (stream == null || !stream.CanRead) return;
 
         try
         {
             byte[] data = new byte[256];
-            int bytes = stream.Read(data, 0, data.Length);
+            int bytes = await stream.ReadAsync(data, 0, data.Length);
             string response = Encoding.ASCII.GetString(data, 0, bytes);
             JObject message = JObject.Parse(response);
 
@@ -116,22 +119,48 @@ public class RLAgent : MonoBehaviour
         }
     }
 
+    private void UpdateRenderSettings(bool renderEpisode)
+    {
+        if (renderEpisode)
+        {
+            Time.timeScale = 1;
+            Camera.main.enabled = true;
+
+        }
+        else if (!renderEpisode)
+        {
+            Time.timeScale = 20;
+            Camera.main.enabled = false;
+        }  
+    }
 
     public void PlayAction(JObject message)
     {
         int action = message["action"].Value<int>();
         bool renderEpisode = message["render"].Value<bool>();
 
-        //if (renderepisode)
+        int attackArmyCount = tv.frontLineUnits.Count + tv.rearLineUnits.Count;
+        int enemyAttackArmyCount = enemytv.frontLineUnits.Count + enemytv.rearLineUnits.Count;
+
+
+        //if (renderEpisode)
         //{
-        //    time.timescale = 1;
-        //    GetComponent<Camera>().main.enabled = true;
+        //    Time.timeScale = 1;
+        //    Camera.main.enabled = true;
+
         //}
-        //else
+        //else if (!renderEpisode)
         //{
-        //    time.timescale = 20;
-        //    GetComponent<Camera>().main.enabled = true;
+        //    Time.timeScale = 20;
+        //    Camera.main.enabled = false;
         //}
+
+        //if (renderEpisode != renderEpisodeStarted)
+        //{
+        //    UpdateRenderSettings(renderEpisode);
+        //}
+
+
 
         reward = 0;
 
@@ -168,7 +197,15 @@ public class RLAgent : MonoBehaviour
             }
             if (tv.units <= 0) // discourage to retreat if there are no units
             {
-                reward -= 100;
+                reward -= 10;
+            }
+            if(enemytv.state != State.Advance)
+            {
+                reward -= 10;
+            }
+            if(attackArmyCount < enemyAttackArmyCount)
+            {
+                reward += 50;
             }
             tv.state = State.Retreat;
         }
@@ -189,8 +226,15 @@ public class RLAgent : MonoBehaviour
             
             if (tv.frontLineUnits.Count == 0 && tv.rearLineUnits.Count ==0) // discourage to advance if there are no attack units
             {
-                reward -= 100;
+                reward -= 10;
             }
+
+            if(enemytv.state == State.Retreat && (attackArmyCount>enemyAttackArmyCount)) // encorage attack if you have more units when they are retreating
+            {
+                reward += 50;
+            }
+
+            
             tv.state = State.Advance;
         }
         else if (action == 4)
@@ -286,20 +330,6 @@ public class RLAgent : MonoBehaviour
             reward += 5 * (_enemyUnitCount - enemytv.units);
         }
 
-        if (tv.state == State.Retreat && enemytv.state != State.Advance) // punish for staying retreat if enemy isnt attacking
-        {
-            reward -= 200;
-        }
-
-        if (tv.state == State.Advance && enemytv.state == State.Retreat)
-        {
-            reward += 50; // Reward for aggressive advantage-taking
-        }
-
-        if (tv.state == State.Retreat && tv.units < enemytv.units)
-        {
-            reward += 50; // Reward for intelligent retreat
-        }
 
         if (tv.isDead)
         {
@@ -319,7 +349,14 @@ public class RLAgent : MonoBehaviour
     public void SendObservation()
     {
         JObject newState = GetState();
-        bool done = tv.isDead;
+        
+        if (gv.gameOver) Debug.Log($"agentId: {agentId} : Team dead : {tv.isDead}  and Enemy Team : {enemytv.isDead}");
+
+        //// Update global gameOver only if any agent sees game over
+        //if (done && !gv.gameOver)
+        //{
+        //    gv.gameOver = true;  // Set global gameOver flag
+        //}
 
         // Prepare the message to send back to Python
         JObject response = new JObject
@@ -329,7 +366,23 @@ public class RLAgent : MonoBehaviour
             ["reward"] = reward,
             ["done"] = gv.gameOver
         };
+
+        
         SendToPython(response);
+
+
+        // After sending the observation, increment end-of-episode count if gameOver is true
+        if (gv.gameOver)
+        {
+            gv.endOfEpisodeCount++;
+
+            // If both agents have confirmed gameOver, reset the environment
+            if (gv.endOfEpisodeCount >= 2)
+            {
+                gv.ResetEnvironment();
+               
+            }
+        }
     }
 
     public JObject GetState()

@@ -35,7 +35,6 @@ public class Tower : Unit
             Debug.Log("tower dead");
             tv.health = 0;
             tv.isDead = true;
-            gv.gameOver = true;
             gameObject.SetActive(false);
             Die();
         }

@@ -7408,8 +7408,9 @@ MonoBehaviour:
   verticalSpacing: 3
   team1: {fileID: 0}
   team2: {fileID: 0}
-  timescale: 10
+  timescale: 4.28
   time: 0
+  endOfEpisodeCount: 0
 --- !u!4 &1901931862
 Transform:
   m_ObjectHideFlags: 0
@@ -8465,6 +8466,10 @@ PrefabInstance:
     - target: {fileID: 2578638987947150344, guid: e1dc9f6d8e64bbb4db7def7cdb7cb112, type: 3}
       propertyPath: health
       value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 2578638987947150344, guid: e1dc9f6d8e64bbb4db7def7cdb7cb112, type: 3}
+      propertyPath: attackWidth
+      value: 5.76
       objectReference: {fileID: 0}
     - target: {fileID: 4165089366742366553, guid: e1dc9f6d8e64bbb4db7def7cdb7cb112, type: 3}
       propertyPath: m_AnchorMax.x
