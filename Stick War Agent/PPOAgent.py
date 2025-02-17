@@ -1,0 +1,105 @@
+import torch
+import torch.nn.functional as F
+import os
+import numpy as np
+class PPOAgent:
+    def __init__(self, model, optimizer, clip_epsilon, gamma,
+                 update_epochs, value_coef,
+                 entropy_coef, device='cpu'):
+        self.model = model
+        self.optimizer = optimizer
+        self.clip_epsilon = clip_epsilon
+        self.gamma = gamma
+        self.update_epochs = update_epochs
+        self.value_coef = value_coef
+        self.entropy_coef = entropy_coef
+        self.device = device
+        self.memory = []  # To store trajectories (on-policy)
+
+    def select_action(self, state):
+        """Given a state, sample an action from the policy."""
+        state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
+        policy_logits, value = self.model(state_tensor)
+        policy = torch.softmax(policy_logits, dim=-1)
+        dist = torch.distributions.Categorical(policy)
+        action = dist.sample()
+        log_prob = dist.log_prob(action)
+
+        float_entropy = dist.entropy().item()
+        probs = policy.detach().cpu().numpy()[0]
+
+        #print(f"[select_action] Action: {action.item()}, Entropy: {float_entropy:.4f}, Probs: {probs}")
+        return action.item(), log_prob.detach(), value.detach()
+
+    def store_transition(self, transition):
+        """Store a single transition.
+        Transition is a tuple: (state, action, reward, log_prob, value, done)
+        """
+        self.memory.append(transition)
+
+    def compute_returns_and_advantages(self, last_value, done):
+        """Compute discounted returns and advantages over the stored trajectory."""
+        returns = []
+        R = 0 if done else last_value.item()
+        # Compute discounted returns backwards
+        for (_, _, reward, _, _, _) in reversed(self.memory):
+            R = reward + self.gamma * R
+            returns.insert(0, R)
+        returns = torch.tensor(returns, dtype=torch.float32).to(self.device)
+        # Extract the values stored earlier
+        values = torch.tensor([t[4].item() for t in self.memory], dtype=torch.float32).to(self.device)
+        advantages = returns - values
+        return returns, advantages
+
+    def update(self, returns, advantages):
+        """Update the policy and value function using PPO clipped objective."""
+        # Convert list of numpy arrays to a single numpy array first
+        states_np = np.array([t[0] for t in self.memory])
+        states = torch.tensor(states_np, dtype=torch.float32).to(self.device)
+        
+        # For actions, if they are simple integers, this is likely fine,
+        # but you can also wrap them in np.array for consistency.
+        actions_np = np.array([t[1] for t in self.memory])
+        actions = torch.tensor(actions_np, dtype=torch.int64).to(self.device)
+        
+        # For old_log_probs, we extract the float values.
+        old_log_probs_np = np.array([t[3].item() for t in self.memory])
+        old_log_probs = torch.tensor(old_log_probs_np, dtype=torch.float32).to(self.device)
+
+        for _ in range(self.update_epochs):
+            policy_logits, values = self.model(states)
+            policy = torch.softmax(policy_logits, dim=-1)
+            dist = torch.distributions.Categorical(policy)
+            new_log_probs = dist.log_prob(actions)
+            entropy = dist.entropy().mean()
+
+            # Compute ratio (new prob / old prob)
+            ratio = torch.exp(new_log_probs - old_log_probs)
+            surr1 = ratio * advantages
+            surr2 = torch.clamp(ratio, 1.0 - self.clip_epsilon, 1.0 + self.clip_epsilon) * advantages
+            policy_loss = -torch.min(surr1, surr2).mean()
+
+            value_loss = F.mse_loss(values.squeeze(1), returns)
+            loss = policy_loss + self.value_coef * value_loss - self.entropy_coef * entropy
+
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
+
+        # Clear memory after update
+        self.memory = []
+
+
+    def save_model(self, agent_id):
+        model_path = f"models/model_agent_{agent_id}.pth"
+        os.makedirs("models", exist_ok=True)
+        torch.save(self.model.state_dict(), model_path)
+        print(f"Saved model for agent {agent_id} to {model_path}")
+
+    def load_model(self, agent_id):
+        model_path = f"models/model_agent_{agent_id}.pth"
+        if os.path.exists(model_path):
+            self.model.load_state_dict(torch.load(model_path, weights_only= True))
+            print(f"Loaded model for agent {agent_id} from {model_path}")
+        else:
+            print(f"No saved model found for agent {agent_id}, starting with a new model.")

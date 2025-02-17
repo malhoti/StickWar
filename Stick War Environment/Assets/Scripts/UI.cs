@@ -37,6 +37,8 @@ public class UI : MonoBehaviour
 
     public Button moveToTeam1;
     public Button moveToTeam2;
+
+    public Button reset;
     // Start is called before the first frame update
     void Start()
     {
@@ -60,6 +62,8 @@ public class UI : MonoBehaviour
 
         moveToTeam1.onClick.AddListener(MoveToTeam1Pressed);
         moveToTeam2.onClick.AddListener(MoveToTeam2Pressed);
+
+        reset.onClick.AddListener(Reset);
 
     }
 
@@ -147,6 +151,12 @@ public class UI : MonoBehaviour
     void MoveToTeam2Pressed()
     {
         Camera.transform.position = new Vector3(tv2.transform.position.x, Camera.transform.position.y, Camera.transform.position.z);
+
+    }
+
+    void Reset()
+    {
+        gv.ResetEnvironment();
 
     }
 

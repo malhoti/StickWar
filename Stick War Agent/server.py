@@ -7,79 +7,229 @@ import torch.optim as optim
 import torch.nn.functional as F
 import random
 import numpy as np
+import queue
 from DQN import DQN
 from replayMemory import ReplayMemory
 from DQN_utils import DQNAgent
 
+from PPO import PPO
+from PPOAgent import PPOAgent
+from Visualise import live_plot
+from CSVLogger import CSVLogger
 
 # Hyperparameters
-input_dim = 13 # Example input dimension, adjust based on your state vector
-output_dim = 7  # Example output dimension (number of actions)
-gamma = 0.99  # Discount factor for future rewards
-batch_size = 64
-epsilon = 1.0  # Initial epsilon for exploration
-epsilon_min = 0.1
-epsilon_decay = 0.995
-target_update_frequency = 1000  # Update target network every 1000 steps
-batch_size = 64 # for buffer memory
-buffer_capacity = 10000
+input_dim = 13      # Example input dimension, adjust based on your state vector
+output_dim = 7      # Example output dimension (number of actions)
+gamma = 0.99        # Discount factor for future rewards
+ppo_clip = 0.2
+update_epochs = 4
 learning_rate = 0.001
+value_coef = 0.5
+entropy_coef = 0.5
+
+# batch_size = 64
+# epsilon = 1.0       # Initial epsilon for exploration
+# epsilon_min = 0.1
+# epsilon_decay = 0.995
+# target_update_frequency = 1000  # Update target network every 1000 steps
+# batch_size = 64                 # for buffer memory
+# buffer_capacity = 10000
+# learning_rate = 0.001
 
 model_save_frequency = 100
 render_episode_frequency = 10
-
+plot_update_frequency = 100
+MAX_STEPS_PER_EPISODE = 1200
 
 #agent = DQNAgent(dqn_model, target_dqn_model, optimizer, replay_memory, device, output_dim, gamma)
 # Server configuration
-HOST = '192.168.1.206'  # Localhost
+HOST = '127.0.0.1'  # Localhost
 PORT = 5000         # Port to bind the server to
+
+reward_queue = queue.Queue()
+episode_rewards = []
 
 
 
 def handle_client(conn, addr):
-    dqn_model = DQN(input_dim, output_dim)
-    target_dqn_model = DQN(input_dim, output_dim)
-    target_dqn_model.load_state_dict(dqn_model.state_dict())  # Copy weights to target model initially
-    target_dqn_model.eval()  # Target network is in evaluation mode
-    optimizer = optim.Adam(dqn_model.parameters(), lr=learning_rate)
-    replay_memory = ReplayMemory(buffer_capacity)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    ppo_model = PPO(input_dim, output_dim).to(device)
+    optimiser = optim.Adam(ppo_model.parameters(), lr=learning_rate)
+    agent = PPOAgent(ppo_model, optimiser, ppo_clip, gamma, update_epochs, value_coef, entropy_coef, device)
 
-    agent = DQNAgent(dqn_model, target_dqn_model, optimizer, replay_memory, device, output_dim, gamma)
-    global epsilon
-    
     print(f"Connected by {addr}")
-    step = 0  # Track steps for target network update
+
+    # Episode and transition tracking variables
+    episode = 1
     total_reward = 0
-    episode = 0
+    step = 0
+    max_steps_reached = False
+
+    prev_state = None
+    last_action = None
+    last_log_prob = None
+    last_value = None
+    last_reward = 0  # reward from previous cycle
 
     try:
+        # Wait for the initial message from Unity
         data = conn.recv(1024)
         if data:
             data_dict = json.loads(data.decode())
-            agent_id = data_dict.get('agent_id')  # Extract agent_id from the first message
-            
-            # Load model based on agent_id after receiving the first message
+            agent_id = data_dict.get('agent_id')
+            # Load model if it exists...
             model_path = f"models/model_agent_{agent_id}.pth"
             if os.path.exists(model_path):
-                dqn_model.load_state_dict(torch.load(model_path,weights_only=True))
+                agent.load_model(agent_id)
                 print(f"Loaded model for agent {agent_id}")
             else:
-                print(f"No saved model found for agent {agent_id}, starting with a new model.")     
+                print(f"No saved model found for agent {agent_id}, starting with a new model.")
+
+            csv_logger  = CSVLogger(f"{agent_id}states_logger.csv")
+            # Process the initial state from Unity
+            state_dict = data_dict.get('state')
+            current_state = np.array([
+                state_dict['gold'],
+                state_dict['health'],
+                state_dict['miners'],
+                state_dict['swordsmen'],
+                state_dict['archers'],
+                state_dict['stateValue'],
+                state_dict['nearby_resources_available'],
+                state_dict['enemy_health'],
+                state_dict['enemy_miners'],
+                state_dict['enemy_swordsmen'],
+                state_dict['enemy_archers'],
+                state_dict['enemies_in_vicinity'],
+                state_dict['episode_time']
+            ], dtype=np.float32)
+            # Optionally initialize total_reward if provided
+            current_reward = data_dict.get('reward', 0)
+
+        # Main loop: each iteration handles one message from Unity and responds with an action.
+        while True:
+            
+            # Select an action based on the current state
+            action, log_prob, value = agent.select_action(current_state)
 
 
-        while data:
-            # Decode JSON data
+            last_action = action
+            last_log_prob = log_prob
+            last_value = value
+            last_reward = current_reward  # Save the reward for this cycle (to be associated with the next transition)
+
+
+            csv_logger.log_state(step, list(current_state) + [action])
+            # Decide whether to render the episode (optional)
+            render_episode = (episode % render_episode_frequency == 0)
+
+
+            # Check for forced termination (max steps)
+            if step > MAX_STEPS_PER_EPISODE:
+                max_steps_reached = True
+
+            # Prepare and send the response (action message) to Unity
+            response = json.dumps({
+                "agent_id": agent_id,
+                "action": action,
+                "render": render_episode,
+                "maxStepsReached": max_steps_reached
+            })
+            conn.sendall(response.encode())
+
+            # Receive the current state (and reward/done) from Unity
+            data = conn.recv(1024)
+            if not data:
+                break
+
             data_dict = json.loads(data.decode())
             agent_id = data_dict.get('agent_id')
             state_dict = data_dict.get('state')
-            reward = data_dict.get('reward')
+            current_reward = data_dict.get('reward')
             done = data_dict.get('done')
+            # Convert current state
+            new_state = np.array([
+                state_dict['gold'],
+                state_dict['health'],
+                state_dict['miners'],
+                state_dict['swordsmen'],
+                state_dict['archers'],
+                state_dict['stateValue'],
+                state_dict['nearby_resources_available'],
+                state_dict['enemy_health'],
+                state_dict['enemy_miners'],
+                state_dict['enemy_swordsmen'],
+                state_dict['enemy_archers'],
+                state_dict['enemies_in_vicinity'],
+                state_dict['episode_time']
+            ], dtype=np.float32)
 
-            if(done):
-                print("asdfasdf")
-            # Prepare state values for DQN input
-            state_values = np.array([
+            # Update cumulative reward and step count
+            total_reward += current_reward
+            if step % plot_update_frequency == 0:
+                reward_queue.put((agent_id,total_reward))
+                #print(f"Pushed reward for agent {agent_id}: {total_reward}")
+
+
+            step += 1
+
+            # Build the transition from the previous state (current_state) to new_state.
+            # The reward and terminal flag from the last cycle are now associated with that transition.
+            terminal_flag = done or max_steps_reached
+            if prev_state is None:
+                # For the very first iteration, we don't have a complete transition yet.
+                # So we set prev_state to the current state.
+                prev_state = current_state
+            else:
+                agent.store_transition((prev_state, last_action, last_reward, last_log_prob, last_value, terminal_flag))
+
+            
+              # Save the reward for this cycle (to be used in next transition)
+            last_reward = current_reward
+
+            # For the next transition, the current state becomes the previous state.
+            prev_state = current_state
+            current_state = new_state
+
+            # If the episode is terminal, update the agent and reset counters.
+            if terminal_flag:
+                # Compute bootstrap value for the terminal state
+                state_tensor = torch.tensor(current_state, dtype=torch.float32).unsqueeze(0).to(device)
+                with torch.no_grad():
+                    _, last_value = ppo_model(state_tensor)
+                returns, advantages = agent.compute_returns_and_advantages(last_value, done or max_steps_reached)
+                agent.update(returns, advantages)
+
+                print(f"Episode {episode}, Total Reward: {total_reward}")
+
+                # Reset episode-specific variables
+                total_reward = 0
+                episode += 1
+                step = 0
+                max_steps_reached = False
+                prev_state = None  # Start fresh
+                last_action = None
+                last_log_prob = None
+                last_value = None
+                last_reward = 0
+                # Optionally save model periodically:
+                if episode % model_save_frequency == 0:
+                    agent.save_model(agent_id)
+
+
+                reset_ack = json.dumps({"reset_ack": True})
+                conn.sendall(reset_ack.encode())
+                print("Sent reset ack. Waiting for new initial state from Unity...")
+
+
+                # After terminal, expect Unity to send a new initial state.
+                data = conn.recv(1024)
+                if not data:
+                    break
+                print(f"{agent_id}, i recieved new state")
+                data_dict = json.loads(data.decode())
+                state_dict = data_dict.get('state')
+                current_state = np.array([
                     state_dict['gold'],
                     state_dict['health'],
                     state_dict['miners'],
@@ -94,93 +244,21 @@ def handle_client(conn, addr):
                     state_dict['enemies_in_vicinity'],
                     state_dict['episode_time']
                 ], dtype=np.float32)
+            else:
+                prev_state = current_state
             
-            #if step % 64 == 0:
-                #print(f"Message received from {addr}: {data_dict}")
-
-            # Select action
-            action = agent.select_action(state_values, epsilon)
-
-            
-            if episode %render_episode_frequency ==0:
-                render_episode = True
-
-            # Send the selected action back to Unity
-            response = json.dumps({
-                "agent_id": agent_id,
-                "action": action,
-                "render" : render_episode
-            })
-            conn.sendall(response.encode())
-
-            # Receive next state data
-            next_data = conn.recv(1024)
-            if not next_data:
-                break
-            next_data_dict = json.loads(next_data.decode())
-
-            # Extract next state information
-            next_state_dict = next_data_dict.get('state')
-            next_state_values = np.array([
-                    next_state_dict['gold'],
-                    next_state_dict['health'],
-                    next_state_dict['miners'],
-                    next_state_dict['swordsmen'],
-                    next_state_dict['archers'],
-                    next_state_dict['stateValue'],
-                    next_state_dict['nearby_resources_available'],
-                    next_state_dict['enemy_health'],
-                    next_state_dict['enemy_miners'],
-                    next_state_dict['enemy_swordsmen'],
-                    next_state_dict['enemy_archers'],
-                    next_state_dict['enemies_in_vicinity'],
-                    next_state_dict['episode_time']
-                ], dtype=np.float32)
-
-            # Store experience in replay memory
-            replay_memory.push(state_values, action, reward, next_state_values, done)
-
-            # Optimize the model
-            agent.optimize_model(batch_size)
-
-            # Update target network periodically
-            if step % target_update_frequency == 0:
-                target_dqn_model.load_state_dict(dqn_model.state_dict())
-
-            if step % model_save_frequency == 0:
-                    torch.save(dqn_model.state_dict(), model_path)
-                    #print(f"Model saved for agent {agent_id} after {step} steps.")
-
-            # Decay epsilon
-            if epsilon > epsilon_min:
-                epsilon *= epsilon_decay
-
-            step += 1
-            total_reward += reward
-
-            if done:
-                # Episode has ended
-                print(f"Episode {episode}, Total Reward: {total_reward}, Epsilon: {epsilon}")
-                total_reward = 0
-                episode += 1
-                step = 0  # Optionally reset step for new episode
-                render_episode = False
-                print(f"Message received from {agent_id}: {data_dict} : this is next data\n\n{next_data_dict}")
-
-            # Update data for next iteration
-            data = next_data
 
     except Exception as e:
         print(f"Error handling client {addr}: {e}")
     finally:
-        if 'agent_id' in locals():  # Check if agent_id was defined
-            torch.save(dqn_model.state_dict(), model_path)
+        if 'agent_id' in locals():
+            agent.save_model(agent_id)
             print(f"Final model saved for agent {agent_id}")
         print(f"Connection with {addr} closed.")
         conn.close()
 
 # Main server function
-def main():
+def server_main():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
         server_socket.bind((HOST, PORT))
         server_socket.listen()
@@ -191,6 +269,11 @@ def main():
             # Start a new thread for each connected client
             client_thread = threading.Thread(target=handle_client, args=(conn, addr))
             client_thread.start()
+            
+
 
 if __name__ == "__main__":
-    main()
+    server_thread = threading.Thread(target=server_main, daemon=True)
+    server_thread.start()
+    live_plot(reward_queue,plot_update_frequency)
+    

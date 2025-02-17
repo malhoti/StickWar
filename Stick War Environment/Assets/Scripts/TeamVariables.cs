@@ -140,6 +140,7 @@ public class TeamVariables : MonoBehaviour
         tower.alive = true;
         tower.gameObject.SetActive(true);
 
+        print(initialGold);
         spawn.SpawnUnit(gv.miner);
 
 
