@@ -679,10 +679,8 @@ public class RLAgent : MonoBehaviour
 
     private CSVLogger rewardLogger;
 
-    // A flag to indicate if this agent has already reported the terminal state.
-    public bool hasReported = false;
-    // A flag to indicate if the episode is over (set by game logic in Unity)
-    public bool episodeIsTerminal = false;
+   
+   
     
 
     private void Awake()
@@ -736,7 +734,7 @@ public class RLAgent : MonoBehaviour
         {
             Debug.Log($"Agent {agentId}: Max steps reached. Ending episode.");
             // Set the terminal flag so our protocol sends a terminal observation.
-            episodeIsTerminal = true;
+            
             gv.gameOver = true;
         }
 
@@ -942,7 +940,7 @@ public class RLAgent : MonoBehaviour
 
 
     
-    private void ResetAgentEnv()
+    public void ResetAgentEnv()
     {
         if (tv.team == 1)
         {

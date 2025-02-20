@@ -37,11 +37,7 @@ public class GlobalVariables : MonoBehaviour
 
     public float time;
 
-    public int endOfEpisodeCount = 0;
-    public bool environmentResetInitiated = false;
-    public bool newEpisodeReady = false;
-    public int totalAgent = 0;
-    public int terminalAgentCount= 0;
+    
 
 
     void Awake()
@@ -78,14 +74,10 @@ public class GlobalVariables : MonoBehaviour
         team1.ResetEnvironment();
         team2.ResetEnvironment();   
         gameOver = false;
-        endOfEpisodeCount = 0;
+        
         time = 0;
 
-        RLAgent[] agents = FindObjectsOfType<RLAgent>();
-        foreach (var agent in agents)
-        {
-            agent.hasReported = false;
-        }
+        
 
         Debug.Log("Environment reset. All agent flags cleared.");
     }

@@ -25,7 +25,7 @@ entropy_coef = 0.5
 model_save_frequency = 1
 render_episode_frequency = 10
 plot_update_frequency = 100
-MAX_STEPS_PER_EPISODE = 500
+MAX_STEPS_PER_EPISODE = 800
 MAX_EPISODE = 100
 
 # Server configuration
@@ -35,7 +35,7 @@ PORT = 5000
 # Global dictionaries for agents and metrics
 agents = {}            # { agent_id: PPOAgent instance }
 all_metrics = {}       # { agent_id: metrics dict }
-reward_queue = queue.Queue()  # For plotting if needed
+
 csv_loggers = {}       # { agent_id: CSVLogger instance }
 
 def extract_state(state_dict):
@@ -70,8 +70,8 @@ def initialise_agent(agent_id, device):
 
     model_path = f"models/model_agent_{agent_id}.pth"
     if os.path.exists(model_path):
-        agent_instance.load_model(model_path)
-        print(f"Loaded model for agent {agent_id}")
+        agent_instance.load_model(agent_id)
+        
     else:
         print(f"No saved model found for agent {agent_id}, starting with a new model.")
 
@@ -104,8 +104,10 @@ def handle_client(conn, addr):
 
     step = 0
     episode = 1
+    total_reward = {}
+    increment_episode = False
     try:
-        while True:
+        while episode <= MAX_EPISODE:
             data = conn.recv(4096)
             if not data:
                 print("Connection closed by client.")
@@ -117,7 +119,7 @@ def handle_client(conn, addr):
                 line, buffer = buffer.split("\n", 1)
                 if not line.strip():
                     continue
-                print(line)
+                #print(line)
                 try:
                     message = json.loads(line)
                 except json.JSONDecodeError as e:
@@ -133,6 +135,7 @@ def handle_client(conn, addr):
                         # If this is a new agent, initialize it.
                         if agent_id not in agents:
                             agents[agent_id] = initialise_agent(agent_id, device)
+                            total_reward[agent_id] = 0
 
                         agent_instance = agents[agent_id]
                         # Extract the state, reward, and done flag.
@@ -140,10 +143,10 @@ def handle_client(conn, addr):
                         current_state = extract_state(state_dict)
                         current_reward = data_dict.get("reward", 0)
                         done = data_dict.get("done", False)
-                        # episode = data_dict.get("episode", 1)
-                        # step = data_dict.get("step", 0)
+                        
                         max_steps_reached = (step >= MAX_STEPS_PER_EPISODE)
 
+                        total_reward[agent_id] += current_reward
                         # For logging and metrics update:
                         logger = csv_loggers[agent_id]
 
@@ -174,28 +177,35 @@ def handle_client(conn, addr):
                             returns, advantages = agent_instance.compute_returns_and_advantages(last_value, done)
                             agent_instance.update(returns, advantages)
                             
-                            print(f"Agent {agent_id} : Episode {episode}, Total Reward: {current_reward}")
+                            print(f"Agent {agent_id} : Episode {episode}, Total Reward: {total_reward}")
                             
                             # Optionally, save the model periodically.
                             if episode % model_save_frequency == 0:
-                                model_path = f"models/model_agent_{agent_id}.pth"
-                                agent_instance.save_model(model_path)
-                                print(f"Saved model for agent {agent_id} at episode {episode}")
+                                
+                                agent_instance.save_model(agent_id)
+                                
 
                             # Log metrics for graphing.
-                            all_metrics[agent_id]["episode_rewards"].append(current_reward)
+                            all_metrics[agent_id]["episode_rewards"].append(total_reward[agent_id])
                             all_metrics[agent_id]["episodes"].append(episode)
                             all_metrics[agent_id]["policy_losses"].append(agent_instance.policy_loss)
                             all_metrics[agent_id]["value_losses"].append(agent_instance.value_loss)
                             all_metrics[agent_id]["total_losses"].append(agent_instance.total_loss)
                             all_metrics[agent_id]["entropies"].append(agent_instance.entropy)
 
+                           
+                            total_reward[agent_id] = 0
                             # Respond with a reset acknowledgment.
                             response_actions[agent_id] = {"reset_ack": True}
 
-                            episode += 1
+                            increment_episode = True
                             step = 0
-                            
+
+
+                    if increment_episode:
+                        episode += 1
+                        increment_episode = False    
+
                     step += 1
                     # Send back an aggregated response for all agents.
                     response = {"type": "action", "agents": response_actions}
@@ -210,8 +220,7 @@ def handle_client(conn, addr):
     finally:
         # Save final models for all agents.
         for agent_id, agent_instance in agents.items():
-            model_path = f"models/model_agent_{agent_id}.pth"
-            agent_instance.save_model(model_path)
+            agent_instance.save_model(agent_id)
             print(f"Final model saved for agent {agent_id}")
         conn.close()
         print(f"Connection with {addr} closed.")

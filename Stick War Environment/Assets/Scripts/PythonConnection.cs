@@ -11,6 +11,8 @@ public class PythonConnection : MonoBehaviour
 {
     public static PythonConnection Instance { get; private set; }
 
+    private GlobalVariables gv;
+
     // TCP connection info
     private TcpClient client;
     private NetworkStream stream;
@@ -36,10 +38,12 @@ public class PythonConnection : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        
     }
 
     void Start()
     {
+        gv = GetComponent<GlobalVariables>();
         // add agentst to the dictionary
         foreach (RLAgent agent in FindObjectsOfType<RLAgent>())
         {
@@ -83,7 +87,7 @@ public class PythonConnection : MonoBehaviour
         
     
         yield return new WaitForSeconds(sendInterval);
-        Debug.Log("hello");
+
         // Build the aggregated JSON message
         JObject aggregatedMsg = new JObject();
         aggregatedMsg["type"] = "state";
@@ -97,7 +101,7 @@ public class PythonConnection : MonoBehaviour
             {
                 ["state"] = agent.GetState(),        // Agent's observation (as a JObject)
                 ["reward"] = agent.reward,             // Current reward
-                ["done"] = agent.episodeIsTerminal,    // Terminal flag
+                ["done"] = agent.gv.gameOver,    // Terminal flag
                              
             };
             // Use the agent ID (as a string) as key
@@ -168,15 +172,28 @@ public class PythonConnection : MonoBehaviour
                 JObject agentsActions = (JObject)response["agents"];
                 foreach (var pair in agentsActions)
                 {
+                    
                     int id = int.Parse(pair.Key);
                     JObject actionData = (JObject)pair.Value;
-                    int action = actionData["action"].Value<int>();
-                    bool maxStepsReached = actionData["maxStepsReached"].Value<bool>();
-                    int step = actionData["step"].Value<int>();
-                    // Optionally extract other fields such as "render", "step", etc.
-                    if (agents.ContainsKey(id))
+                    if (actionData.ContainsKey("reset_ack") && actionData["reset_ack"].Value<bool>() == true)
                     {
-                        agents[id].PlayAction(action,step,maxStepsReached);
+                        foreach (RLAgent agent in agents.Values)
+                        {
+                            agent.ResetAgentEnv();
+                        }
+                        gv.ResetEnvironment(); // call your reset function
+                        break; // exit the loop since a reset ack has been processed
+                    }
+                    else
+                    {
+                        int action = actionData["action"].Value<int>();
+                        bool maxStepsReached = actionData["maxStepsReached"].Value<bool>();
+                        int step = actionData["step"].Value<int>();
+                        // Optionally extract other fields such as "render", "step", etc.
+                        if (agents.ContainsKey(id))
+                        {
+                            agents[id].PlayAction(action, step, maxStepsReached);
+                        }
                     }
                 }
                 StartCoroutine(SendAggregatedObservations());
