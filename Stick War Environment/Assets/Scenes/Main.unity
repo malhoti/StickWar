@@ -3095,7 +3095,7 @@ MonoBehaviour:
   archer2: {fileID: 792987368}
   moveToTeam1: {fileID: 1229936735}
   moveToTeam2: {fileID: 1070089558}
-  reset: {fileID: 0}
+  reset: {fileID: 1269176981}
 --- !u!1 &846882458
 GameObject:
   m_ObjectHideFlags: 0
@@ -7634,6 +7634,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1901931862}
   - component: {fileID: 1901931861}
+  - component: {fileID: 1901931863}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -7669,7 +7670,7 @@ MonoBehaviour:
   verticalSpacing: 3
   team1: {fileID: 0}
   team2: {fileID: 0}
-  timescale: 20
+  timescale: 1
   time: 0
   endOfEpisodeCount: 0
   environmentResetInitiated: 0
@@ -7691,6 +7692,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1901931863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901931860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d1bc1e0bda2dc94f9bb403ed75d516c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sendInterval: 0.1
 --- !u!1 &1913264991
 GameObject:
   m_ObjectHideFlags: 0

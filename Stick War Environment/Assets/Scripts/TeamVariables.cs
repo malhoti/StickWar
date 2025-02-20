@@ -45,6 +45,8 @@ public class TeamVariables : MonoBehaviour
     private Vector3 initialPosition;
     private State initialState;
 
+    private Coroutine passiveGoldCoroutine;
+
     void Start()
     {
         gv = FindObjectOfType<GlobalVariables>();
@@ -68,8 +70,8 @@ public class TeamVariables : MonoBehaviour
         {
             spawn.SpawnGoldOres();
         }
-        
-        StartCoroutine(PassiveGoldCoroutine());      
+
+        passiveGoldCoroutine =  StartCoroutine(PassiveGoldCoroutine());      
     }
 
 
@@ -87,6 +89,12 @@ public class TeamVariables : MonoBehaviour
 
     public void ResetEnvironment()
     {
+
+        if (passiveGoldCoroutine != null)
+        {
+            StopCoroutine(passiveGoldCoroutine);
+        }
+
         // Reset basic variables
         gold = initialGold;
         health = initialHealth;
@@ -140,13 +148,13 @@ public class TeamVariables : MonoBehaviour
         tower.alive = true;
         tower.gameObject.SetActive(true);
 
-        print(initialGold);
+        
         spawn.SpawnUnit(gv.miner);
 
 
         // Restart any coroutines or timers
-        StopCoroutine(PassiveGoldCoroutine());
-        StartCoroutine(PassiveGoldCoroutine());
+        
+        passiveGoldCoroutine = StartCoroutine(PassiveGoldCoroutine());
 
         //Debug.Log("Environment reset for team: " + team);
     }

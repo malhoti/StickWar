@@ -15,6 +15,7 @@ class PPOAgent:
         self.entropy_coef = entropy_coef
         self.device = device
         self.memory = []  # To store trajectories (on-policy)
+        
 
     def select_action(self, state):
         """Given a state, sample an action from the policy."""
@@ -66,6 +67,10 @@ class PPOAgent:
         old_log_probs_np = np.array([t[3].item() for t in self.memory])
         old_log_probs = torch.tensor(old_log_probs_np, dtype=torch.float32).to(self.device)
 
+        total_policy_loss = 0.0
+        total_value_loss = 0.0
+        total_entropy = 0.0
+
         for _ in range(self.update_epochs):
             policy_logits, values = self.model(states)
             policy = torch.softmax(policy_logits, dim=-1)
@@ -86,6 +91,14 @@ class PPOAgent:
             loss.backward()
             self.optimizer.step()
 
+            total_policy_loss += policy_loss.item()
+            total_value_loss += value_loss.item()
+            total_entropy += entropy.item()
+
+        self.policy_loss = total_policy_loss / self.update_epochs
+        self.value_loss = total_value_loss / self.update_epochs
+        self.entropy = total_entropy / self.update_epochs
+        self.total_loss = self.policy_loss + self.value_coef * self.value_loss - self.entropy_coef * self.entropy
         # Clear memory after update
         self.memory = []
 

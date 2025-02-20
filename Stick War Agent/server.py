@@ -14,7 +14,7 @@ from DQN_utils import DQNAgent
 
 from PPO import PPO
 from PPOAgent import PPOAgent
-from Visualise import live_plot
+from Visualise import plot_all_metrics ,live_plot_all_metrics
 from CSVLogger import CSVLogger
 
 # Hyperparameters
@@ -39,7 +39,8 @@ entropy_coef = 0.5
 model_save_frequency = 100
 render_episode_frequency = 10
 plot_update_frequency = 100
-MAX_STEPS_PER_EPISODE = 1200
+MAX_STEPS_PER_EPISODE = 500
+MAX_EPISODE = 100
 
 #agent = DQNAgent(dqn_model, target_dqn_model, optimizer, replay_memory, device, output_dim, gamma)
 # Server configuration
@@ -47,7 +48,22 @@ HOST = '127.0.0.1'  # Localhost
 PORT = 5000         # Port to bind the server to
 
 reward_queue = queue.Queue()
-episode_rewards = []
+
+
+all_metrics = {}
+
+
+
+agent_id = 1
+episode_rewards = []        # List of total rewards per episode
+
+
+policy_losses = []            # List of policy losses per episode (or per update)
+value_losses = []              # List of value losses per episode
+total_losses = []             # List of total losses per episode
+entropies = []                # List of entropy values per episode
+action_counts = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0} # keeps count of each action that was played out in that episode
+  
 
 
 
@@ -59,6 +75,7 @@ def handle_client(conn, addr):
 
     print(f"Connected by {addr}")
 
+    
     # Episode and transition tracking variables
     episode = 1
     total_reward = 0
@@ -85,9 +102,22 @@ def handle_client(conn, addr):
             else:
                 print(f"No saved model found for agent {agent_id}, starting with a new model.")
 
+
+            all_metrics[agent_id] = {  
+                "episode_rewards": [],
+                "episodes": [],
+                "policy_losses": [],
+                "value_losses": [],
+                "total_losses": [],
+                "entropies": [],
+                "action_counts": {0:0 , 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
+            }
+
+
             csv_logger  = CSVLogger(f"{agent_id}states_logger.csv")
             # Process the initial state from Unity
             state_dict = data_dict.get('state')
+            done = data_dict.get('done')
             current_state = np.array([
                 state_dict['gold'],
                 state_dict['health'],
@@ -106,40 +136,48 @@ def handle_client(conn, addr):
             # Optionally initialize total_reward if provided
             current_reward = data_dict.get('reward', 0)
 
+
         # Main loop: each iteration handles one message from Unity and responds with an action.
-        while True:
-            
-            # Select an action based on the current state
-            action, log_prob, value = agent.select_action(current_state)
+        while episode <= MAX_EPISODE:
 
-
-            last_action = action
-            last_log_prob = log_prob
-            last_value = value
-            last_reward = current_reward  # Save the reward for this cycle (to be associated with the next transition)
-
-
-            csv_logger.log_state(step, list(current_state) + [action])
-            # Decide whether to render the episode (optional)
-            render_episode = (episode % render_episode_frequency == 0)
-
-
-            # Check for forced termination (max steps)
-            if step > MAX_STEPS_PER_EPISODE:
+            if step >= MAX_STEPS_PER_EPISODE:
                 max_steps_reached = True
+            if not (done):
+                # Normal case: select an action and send the action message.
+                action, log_prob, value = agent.select_action(current_state)
+                last_action = action
+                last_log_prob = log_prob
+                last_value = value
+                last_reward = current_reward  # save current reward for transition
+                
 
-            # Prepare and send the response (action message) to Unity
-            response = json.dumps({
-                "agent_id": agent_id,
-                "action": action,
-                "render": render_episode,
-                "maxStepsReached": max_steps_reached
-            })
-            conn.sendall(response.encode())
+                # update the action frequency counter
+                all_metrics[agent_id]["action_counts"][action] += 1
+                
+                # Log state and action.
+                csv_logger.log_state(step, list(current_state) + [action])
+                render_episode = (episode % render_episode_frequency == 0)
+
+                response = json.dumps({
+                    "agent_id": agent_id,
+                    "action": action,
+                    "render": render_episode,
+                    "maxStepsReached": max_steps_reached,
+                    "episode": episode,
+                    "step": step
+                })
+                conn.sendall(response.encode())
+                
+            else:
+                # Terminal case: do not send normal action message.
+                print(f"Episode {episode} terminal condition reached (done: {done}, max_steps: {max_steps_reached}).")
+            
+            
 
             # Receive the current state (and reward/done) from Unity
             data = conn.recv(1024)
             if not data:
+                print(agent_id, "heloo")
                 break
 
             data_dict = json.loads(data.decode())
@@ -163,25 +201,26 @@ def handle_client(conn, addr):
                 state_dict['enemies_in_vicinity'],
                 state_dict['episode_time']
             ], dtype=np.float32)
-
+           
             # Update cumulative reward and step count
             total_reward += current_reward
+
             if step % plot_update_frequency == 0:
                 reward_queue.put((agent_id,total_reward))
                 #print(f"Pushed reward for agent {agent_id}: {total_reward}")
 
-
-            step += 1
-
+            
+            
+            
             # Build the transition from the previous state (current_state) to new_state.
             # The reward and terminal flag from the last cycle are now associated with that transition.
-            terminal_flag = done or max_steps_reached
+            
             if prev_state is None:
                 # For the very first iteration, we don't have a complete transition yet.
                 # So we set prev_state to the current state.
                 prev_state = current_state
             else:
-                agent.store_transition((prev_state, last_action, last_reward, last_log_prob, last_value, terminal_flag))
+                agent.store_transition((prev_state, last_action, last_reward, last_log_prob, last_value, done))
 
             
               # Save the reward for this cycle (to be used in next transition)
@@ -190,17 +229,22 @@ def handle_client(conn, addr):
             # For the next transition, the current state becomes the previous state.
             prev_state = current_state
             current_state = new_state
-
+            step += 1
             # If the episode is terminal, update the agent and reset counters.
-            if terminal_flag:
+            if (done):
                 # Compute bootstrap value for the terminal state
                 state_tensor = torch.tensor(current_state, dtype=torch.float32).unsqueeze(0).to(device)
                 with torch.no_grad():
                     _, last_value = ppo_model(state_tensor)
-                returns, advantages = agent.compute_returns_and_advantages(last_value, done or max_steps_reached)
+                returns, advantages = agent.compute_returns_and_advantages(last_value, done)
                 agent.update(returns, advantages)
 
-                print(f"Episode {episode}, Total Reward: {total_reward}")
+
+
+                
+                
+
+                print(f"Agent {agent_id} : Episode {episode}, Total Reward: {total_reward}")
 
                 # Reset episode-specific variables
                 total_reward = 0
@@ -219,16 +263,18 @@ def handle_client(conn, addr):
 
                 reset_ack = json.dumps({"reset_ack": True})
                 conn.sendall(reset_ack.encode())
-                print("Sent reset ack. Waiting for new initial state from Unity...")
+                print(f"Agent {agent_id} : Sent reset ack. Waiting for new initial state from Unity...")
 
 
                 # After terminal, expect Unity to send a new initial state.
                 data = conn.recv(1024)
                 if not data:
                     break
-                print(f"{agent_id}, i recieved new state")
+                print(f"Agent {agent_id} : Recieved state of new environment")
                 data_dict = json.loads(data.decode())
                 state_dict = data_dict.get('state')
+                current_reward = data_dict.get('reward')
+                done  = data_dict.get('done')
                 current_state = np.array([
                     state_dict['gold'],
                     state_dict['health'],
@@ -244,6 +290,27 @@ def handle_client(conn, addr):
                     state_dict['enemies_in_vicinity'],
                     state_dict['episode_time']
                 ], dtype=np.float32)
+                
+                
+
+                # ############### GRAPHING ###################
+                all_metrics[agent_id]["episode_rewards"].append(total_reward)
+                all_metrics[agent_id]["episodes"].append(episode)
+                all_metrics[agent_id]["policy_losses"].append(agent.policy_loss)
+                all_metrics[agent_id]["value_losses"].append(agent.value_loss)
+                all_metrics[agent_id]["total_losses"].append(agent.total_loss)
+                all_metrics[agent_id]["entropies"].append(agent.entropy)
+
+                # episode_rewards.append(total_reward)
+                # policy_losses.append(agent.policy_loss)
+                # value_losses.append(agent.value_loss)
+                # total_losses.append(agent.total_loss)
+                # entropies.append(agent.entropy)
+                
+
+                        # List of total rewards per episode
+
+                
             else:
                 prev_state = current_state
             
@@ -273,7 +340,9 @@ def server_main():
 
 
 if __name__ == "__main__":
-    server_thread = threading.Thread(target=server_main, daemon=True)
+    server_thread = threading.Thread(target=server_main, daemon=False)
     server_thread.start()
-    live_plot(reward_queue,plot_update_frequency)
+    #live_plot(reward_queue,plot_update_frequency)
+    
+    live_plot_all_metrics(all_metrics)
     
