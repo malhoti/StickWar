@@ -21,7 +21,7 @@ public class PythonConnection : MonoBehaviour
     private int serverPort = 5000;
 
     // Frequency (in seconds) for sending aggregated observations
-    public float sendInterval = 0.5f;
+    public float sendInterval = 1f;
     
     // Registered agents by their agentId
     public Dictionary<int, RLAgent> agents = new Dictionary<int, RLAgent>();
@@ -49,14 +49,16 @@ public class PythonConnection : MonoBehaviour
         {
             if (!agents.ContainsKey(agent.agentId))
             {
-                agents.Add(agent.agentId, agent);
+                if (agent.enabled) agents.Add(agent.agentId, agent);
+                
             }
             else
             {
                 Debug.LogWarning($"Duplicate agentId {agent.agentId} found. Skipping duplicate.");
             }
         }
-
+        
+        if (!(agents.Count == 0))
         StartCoroutine(ConnectToServer());
         
     }
@@ -95,13 +97,50 @@ public class PythonConnection : MonoBehaviour
 
         foreach (var kvp in agents)
         {
+
             int id = kvp.Key;
             RLAgent agent = kvp.Value;
+            string trainingMode;
+            string modelType;
+            if (agent.trainingMode)
+            {
+                trainingMode = "train";
+            }
+            else
+            {
+                trainingMode = "eval";
+            }
+            if (agent.modelType)
+            {
+                modelType = "dqn";
+            }
+            else
+            {
+                modelType = "ppo";
+            }
+            int result = 2 ; // 0 - win, 1- loss, 2 - draw
+            bool team1Dead = gv.team1.isDead;
+            bool team2Dead = gv.team2.isDead;
+            if (!team1Dead && !team2Dead)
+            {
+                result = 2; // Draw
+            }
+            else if (agent.tv.team == 1)
+            {
+                result = team2Dead ? 0 : 1; // Win if opponent dead, else loss
+            }
+            else if (agent.tv.team == 2)
+            {
+                result = team1Dead ? 0 : 1;
+            }
             JObject agentObs = new JObject
             {
+                ["agent_type"] = trainingMode,
+                ["model_type"] = modelType,
                 ["state"] = agent.GetState(),        // Agent's observation (as a JObject)
                 ["reward"] = agent.reward,             // Current reward
-                ["done"] = agent.gv.gameOver,    // Terminal flag
+                ["done"] = gv.gameOver,       // Terminal flag 
+                ["result"] = result       // We can track winrates 
                              
             };
             // Use the agent ID (as a string) as key
@@ -111,7 +150,7 @@ public class PythonConnection : MonoBehaviour
 
         string jsonStr = aggregatedMsg.ToString(Newtonsoft.Json.Formatting.None);
         byte[] data = Encoding.ASCII.GetBytes(jsonStr + "\n"); // newline-delimited
-        Debug.Log($"Sending: { jsonStr}");
+        //Debug.Log($"Sending: { jsonStr}");
         try
         {
             if (stream != null && stream.CanWrite)
@@ -143,7 +182,7 @@ public class PythonConnection : MonoBehaviour
                     // Check if a full message (newline terminated) is available
                     if (content.Contains("\n"))
                     {
-                        Debug.Log($"Recieved: {content}");
+                        //Debug.Log($"Recieved: {content}");
                         string[] messages = content.Split('\n');
                         // Process all complete messages except the last incomplete fragment
                         for (int i = 0; i < messages.Length - 1; i++)

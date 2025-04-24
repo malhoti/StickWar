@@ -15,10 +15,7 @@ public class ArmySpawn : MonoBehaviour
     public float horizontal;
     public float vertical;
 
-    [Header("Spawn Cooldown")]
-    public float spawnCooldown; // Cooldown time in seconds for spawning
-    private float spawnCooldownTimer = 0.0f; // Timer to track cooldown
-    private bool onCooldown = false; // Flag to indicate if you are on cooldown for spamming spawning units
+    
 
     [Header("Debug")]
     public GameObject armySoldier;
@@ -31,24 +28,13 @@ public class ArmySpawn : MonoBehaviour
     void Start()
     {
         tv = GetComponentInParent<TeamVariables>();
-        spawnCooldown = gv.spawnCooldown;
+        
         if(testOutSpawn)
         testSpawnUnit();
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        if (onCooldown)
-        {
-            spawnCooldownTimer -= Time.deltaTime;
-            if (spawnCooldownTimer <= 0)
-            {
-                onCooldown = false;
-                spawnCooldownTimer = 0;
-            }
-        }
-    }
+    
 
     
 
@@ -56,6 +42,7 @@ public class ArmySpawn : MonoBehaviour
     {
         if (CanSpawn(unit))
         {
+            
             float halfHeight = vertical / 2;
             float halfWidth = horizontal / 2;
             
@@ -74,13 +61,17 @@ public class ArmySpawn : MonoBehaviour
             {
                 tv.frontLineUnits.Add(spawnedUnit);
             }
-            if (unit.GetComponent<Archer>() != null)
+            if (unit.GetComponent<GarrisonArcher>() != null)
+            {
+                tv.garrisonLineUnits.Add(spawnedUnit);
+            }
+            else if (unit.GetComponent<Archer>() != null)
             {
                 tv.rearLineUnits.Add(spawnedUnit);
             }
+            
 
-            onCooldown = true;
-            spawnCooldownTimer = spawnCooldown;
+            
 
             return true;
         }
@@ -94,7 +85,7 @@ public class ArmySpawn : MonoBehaviour
     bool CanSpawn(GameObject unit) 
     {
         //Debug.Log($"tv: {tv}, gv: {gv}, onCooldown: {onCooldown}, team {tv.team}");
-        if (tv.units >= gv.maxUnits || onCooldown)
+        if (tv.units >= gv.maxUnits)
         {
             return false;
         }
@@ -124,6 +115,11 @@ public class ArmySpawn : MonoBehaviour
                 return true;
             } 
         }
+        if (unit == gv.garrisonArcher)
+        {
+            return true;
+        }
+
         return false;
     }
 

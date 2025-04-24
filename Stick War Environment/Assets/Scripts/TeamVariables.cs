@@ -30,18 +30,19 @@ public class TeamVariables : MonoBehaviour
 
     [Header("Variables")]
     public int gold;
-    public int health;
+    public float health;
     public int units;
     public List<Gold> goldList;
     public List<GameObject> gathererUnits;
     public List<GameObject> frontLineUnits;
     public List<GameObject> rearLineUnits;
+    public List<GameObject> garrisonLineUnits;
     public List<Unit> enemiesInVicinity;
     public State state;
     public bool isDead;
 
     private int initialGold;
-    private int initialHealth;
+    public float initialHealth;
     private Vector3 initialPosition;
     private State initialState;
 
@@ -65,6 +66,12 @@ public class TeamVariables : MonoBehaviour
 
 
         spawn.SpawnUnit(gv.miner);
+
+        for (int i = 0; i < gv.maxUnitsPerColumn; i++)
+        {
+            
+            spawn.SpawnUnit(gv.garrisonArcher);
+        }
 
         foreach (GoldSpawn spawn in goldSpawns)
         {
@@ -103,25 +110,31 @@ public class TeamVariables : MonoBehaviour
         // Destroy all objects in the lists and clear them
         foreach (GameObject gatherer in gathererUnits)
         {
-            Destroy(gatherer);
+            if(gatherer != null) Destroy(gatherer);
         }
         gathererUnits.Clear();
 
         foreach (GameObject frontLineUnit in frontLineUnits)
         {
-            Destroy(frontLineUnit);
+            if(frontLineUnit != null)Destroy(frontLineUnit);
         }
         frontLineUnits.Clear();
 
         foreach (GameObject rearLineUnit in rearLineUnits)
         {
-            Destroy(rearLineUnit);
+            if(rearLineUnit!= null)Destroy(rearLineUnit);
         }
         rearLineUnits.Clear();
 
+        foreach (GameObject garrisonLineUnit in garrisonLineUnits)
+        {
+            if (garrisonLineUnit != null) Destroy(garrisonLineUnit);
+        }
+        garrisonLineUnits.Clear();
+
         foreach (Unit enemy in enemiesInVicinity)
         {
-            Destroy(enemy.gameObject);
+            if(enemy != null) Destroy(enemy.gameObject);
         }
         enemiesInVicinity.Clear();
 
@@ -151,9 +164,12 @@ public class TeamVariables : MonoBehaviour
         
         spawn.SpawnUnit(gv.miner);
 
-
+        for (int i = 0; i < gv.maxUnitsPerColumn; i++)
+        {
+            spawn.SpawnUnit(gv.garrisonArcher);
+        }
         // Restart any coroutines or timers
-        
+
         passiveGoldCoroutine = StartCoroutine(PassiveGoldCoroutine());
 
         //Debug.Log("Environment reset for team: " + team);

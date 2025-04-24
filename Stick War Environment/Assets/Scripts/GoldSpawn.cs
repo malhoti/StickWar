@@ -7,7 +7,7 @@ public class GoldSpawn : MonoBehaviour
 {
     public TeamVariables tv;
     public GameObject goldPrefab;
-    public int maxGoldOres = 5;
+    public int maxGoldOres;
     public float horizontal;
     public float vertical;
 
@@ -20,7 +20,11 @@ public class GoldSpawn : MonoBehaviour
         
     }
 
-    
+    private void Start()
+    {
+        maxGoldOres = tv.gv.maxGoldOres;
+    }
+
 
     // Update is called once per frame
     void Update()

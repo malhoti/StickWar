@@ -72,7 +72,7 @@ public class DamageUnit : Unit
     }
 
 
-    public void Defend()
+    public virtual void Defend()
     {
         
         // whilst defending, units will always scout for enemies
@@ -125,7 +125,7 @@ public class DamageUnit : Unit
         }
     }
 
-    public void Advance()
+    public virtual void Advance()
     {
 
         // when advancing, unless it is in the middle of attacking, it will always search for enemies, if it doesnt find any , march forward until it finds an enemy or the enemy tower

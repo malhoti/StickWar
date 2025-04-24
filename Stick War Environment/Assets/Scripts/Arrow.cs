@@ -7,14 +7,15 @@ public class Arrow : MonoBehaviour
     public int damage;
 
     public TeamVariables tv;
-    public Archer archer;
+    public DamageUnit archer;
     Rigidbody2D rb;
     public Unit target;
     // Start is called before the first frame update
     void Start()
     {
         tv = GetComponentInParent<TeamVariables>();
-        archer = FindObjectOfType<Archer>().GetComponent<Archer>();
+        archer = GetComponentInParent<Archer>();GetComponent<Archer>();
+        
         rb = GetComponent<Rigidbody2D>();
 
         damage = archer.attackDamage;

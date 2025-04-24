@@ -17,8 +17,8 @@ public class Unit : MonoBehaviour
 
     [Header("Attributes")]
     public float moveSpeed;
-    public int health;
-    private int maxHealth;
+    public float health;
+    private float maxHealth;
 
     [Header("States")]
     public Vector2 targetLocation;

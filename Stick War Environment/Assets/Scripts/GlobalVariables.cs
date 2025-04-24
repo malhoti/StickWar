@@ -2,23 +2,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+
 public class GlobalVariables : MonoBehaviour
 {
 
     // Start is called before the first frame update
     [Header("Global Settings")]
+    public int maxGoldOres;
     public int valuePerGold;
     public int maxUnits;
     public bool gameOver;
-    public float spawnCooldown;
+    public float maxTimeLimit;
     [Tooltip("Gold recieved every 3 seconds")]
     public int passiveGoldRate;
+    public float maxHealth;
 
 
     [Header("Army Soldiers")]
     public GameObject miner;
     public GameObject swordsman;
     public GameObject archer;
+    public GameObject garrisonArcher;
 
     [Header("Army Soldier Cost")]
     public int minerCost;
@@ -46,6 +51,7 @@ public class GlobalVariables : MonoBehaviour
         team2 = GameObject.Find("Team2").GetComponent<TeamVariables>();
         gameOver = false;
 
+
     }
 
 
@@ -55,7 +61,8 @@ public class GlobalVariables : MonoBehaviour
     {
         time += Time.deltaTime;
 
-        if (team1.isDead || team2.isDead)
+
+        if (team1.isDead || team2.isDead || time > maxTimeLimit)
         {
             gameOver = true;
             if (gameOver)

@@ -287,7 +287,7 @@ MonoBehaviour:
   targetLocation: {x: 0, y: 0}
   flip: 0
   alive: 1
-  detectionWidth: 99.88
+  detectionWidth: 135
   detectionHeight: 33.2
   detectionOffset: {x: 0, y: 5.35}
   attackWidth: 0.84

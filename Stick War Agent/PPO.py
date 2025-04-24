@@ -15,12 +15,6 @@ class PPO(nn.Module):
     def forward(self, x):
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
-        policy_logits = self.policy_head(x)
-        value = self.value_head(x)
+        policy_logits = self.policy_head(x) # raw action score, polocy then being the probability of choosing that action
+        value = self.value_head(x) # etemiated score of the state
         return policy_logits, value
-
-    def save_model(self, filepath):
-        torch.save(self.state_dict(), filepath)
-        
-    def load_model(self, filepath):
-        self.load_state_dict(torch.load(filepath))

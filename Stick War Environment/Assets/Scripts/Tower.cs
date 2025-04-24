@@ -12,6 +12,7 @@ public class Tower : Unit
     public override void Start()
     {
         base.Start();
+        health = gv.maxHealth;
         
     }
 
