@@ -161,7 +161,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8e210ff83bdb444987cfc7254401333, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  capacity: 500
+  capacity: 50
   capacityVariance: 10
   miningSpotsUsed: 0
   maxMiningSpots: 2

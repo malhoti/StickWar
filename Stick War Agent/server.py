@@ -26,7 +26,7 @@ MAX_STEPS_PER_EPISODE = 1500
 EPOCHS = 1000
 MID_UPDATE_INTERVAL = 100
 dqn_batch_size = 128
-ELO_ENABLED = True   #  keep this true for elo evaluation, this is done at the end 
+ELO_ENABLED = False   #  keep this true for elo evaluation, this is done at the end 
 
 if ELO_ENABLED:
     EPOCHS = 7 # if we are evaluations two models then run only 100 games max

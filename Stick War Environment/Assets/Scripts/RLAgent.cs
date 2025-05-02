@@ -249,7 +249,7 @@ public class RLAgent : MonoBehaviour
     }
 
     // Class-level or static variables to track last reward steps.
-    // Initialize them to a value that ensures the reward is applied at the start (e.g., -interval).
+    // Initialise them to a value that ensures the reward is applied at the start (e.g., -interval).
     private int lastGoldRewardStep = -30;
     private int lastArmyFormationStep = -5;
     private int lastGathererPenaltyStep = -20;
@@ -427,10 +427,5 @@ public class RLAgent : MonoBehaviour
         _towerBonusGiven = false;
     }
 
-    //void OnApplicationQuit()
-    //{
-    //    if (stream != null) stream.Close();
-    //    if (client != null) client.Close();
-    //    rewardLogger.Close();
-    //}
+    
 }

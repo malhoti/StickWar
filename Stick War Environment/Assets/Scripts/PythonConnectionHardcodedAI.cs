@@ -12,14 +12,14 @@ public class PythonConnectionHardcodedAI : MonoBehaviour
 
     private GlobalVariables gv;
 
-    // TCP connection info
+   
     private TcpClient client;
     private NetworkStream stream;
     private bool isConnected = false;
     private string serverIP = "127.0.0.1";
     private int serverPort = 5000;
 
-    // Frequency (in seconds) for sending aggregated observations
+    
     
 
     // Registered agents by their agentId
