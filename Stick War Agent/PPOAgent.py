@@ -58,17 +58,12 @@ class PPOAgent:
 
 
     def update(self, returns, advantages):
-        """Update the policy and value function using PPO clipped objective."""
         # Convert list of numpy arrays to a single numpy array first
         states_np = np.array([t[0] for t in self.memory])
         states = torch.tensor(states_np, dtype=torch.float32).to(self.device)
         
-        # For actions, if they are simple integers, this is likely fine,
-        # but you can also wrap them in np.array for consistency.
         actions_np = np.array([t[1] for t in self.memory])
         actions = torch.tensor(actions_np, dtype=torch.int64).to(self.device)
-
-        assert isinstance(self.memory[0][1], int), "Actions must be stored as integers!"
 
         
         # For old_log_probs, we extract the float values.
@@ -88,16 +83,18 @@ class PPOAgent:
 
             # Compute ratio (new prob / old prob)
             ratio = torch.exp(new_log_probs - old_log_probs)
+
+            # compute clipped surrogate objective
             surr1 = ratio * advantages
             surr2 = torch.clamp(ratio, 1.0 - self.clip_epsilon, 1.0 + self.clip_epsilon) * advantages
-            policy_loss = -torch.min(surr1, surr2).mean()
 
+            # Perform gradient ascent 
+            policy_loss = -torch.min(surr1, surr2).mean()
             value_loss = F.mse_loss(values.squeeze(1), returns)
             loss = policy_loss + self.value_coef * value_loss - self.entropy_coef * entropy
 
             self.optimizer.zero_grad()
             loss.backward()
-
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=0.5)
             self.optimizer.step()
 

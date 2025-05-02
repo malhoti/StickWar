@@ -4,7 +4,7 @@ import os
 class CSVLogger:
     def __init__(self, filename="states.csv"):
         self.filename = filename
-        # Open file in write mode (this will overwrite an existing file)
+        
         self.file = open(filename, "w", newline='')
         self.writer = csv.writer(self.file)
         # Write a header row. Adjust the headers to match your state vector.
@@ -33,7 +33,7 @@ class CSVLogger:
         """
         row = [step] + list(state)
         self.writer.writerow(row)
-        self.file.flush()  # Optional: flush after each write to ensure data is written immediately.
+        self.file.flush()  
 
     def close(self):
         self.file.close()

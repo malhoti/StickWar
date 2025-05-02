@@ -7,9 +7,9 @@ using System.Text;
 using UnityEngine;
 using UnityEditor.VersionControl;
 
-public class PythonConnection : MonoBehaviour
+public class PythonConnectionRLAgents : MonoBehaviour
 {
-    public static PythonConnection Instance { get; private set; }
+    public static PythonConnectionRLAgents Instance { get; private set; }
 
     private GlobalVariables gv;
 
@@ -92,7 +92,7 @@ public class PythonConnection : MonoBehaviour
 
         // Build the aggregated JSON message
         JObject aggregatedMsg = new JObject();
-        aggregatedMsg["type"] = "state";
+        aggregatedMsg["type"] = "agent_interaction";
         JObject agentsObj = new JObject();
 
         foreach (var kvp in agents)

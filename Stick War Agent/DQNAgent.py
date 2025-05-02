@@ -100,11 +100,12 @@ class DQNAgent:
 
         # compute TD target via the target network
         with torch.no_grad():
-            # (1) select best action according to the *online* network
+            # (1) select best action according to the main network
             best_next_actions = self.dqn_model(next_states).argmax(dim=1, keepdim=True)
-            # (2) evaluate those actions using the *target* network
+            # (2) evaluate those actions using the target network
             max_next_q = self.target_dqn_model(next_states).gather(1, best_next_actions)
 
+        # calculate target Q-value using target network
         target_q = rewards + self.gamma * max_next_q * (1 - dones)
 
         # MSE loss

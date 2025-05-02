@@ -40,7 +40,9 @@ public class RLAgent : MonoBehaviour
     
 
     public int agentId;
+    [Tooltip("Keep true to train, false for eval mode")]
     public bool trainingMode;// true for to train and false for eval 
+    [Tooltip("Keep true for DQN, false for PPO")]
     public bool modelType; //keep true for dqn , false for ppo
 
     public TeamVariables tv;
@@ -214,15 +216,14 @@ public class RLAgent : MonoBehaviour
         const float maxEpisodeTime = 600f;      // maximum episode time (in seconds or your time unit)
 
         // Create the state JObject with normalized values
+        // Normalize by dividing by the maximum value
         JObject state = new JObject
         {
-            // Normalize by dividing by the maximum value
             ["gold"] = tv.gold / maxGold,
             ["health"] = tv.health / maxHealth,
             ["miners"] = tv.gathererUnits.Count / maxUnitCount,
             ["swordsmen"] = tv.frontLineUnits.Count / maxUnitCount,
             ["archers"] = tv.rearLineUnits.Count / maxUnitCount,
-            
             ["stateValue"] = new JArray(OneHotEncode((int)tv.state, 3)),
             ["nearby_resources_available"] = tv.goldList.Count / maxResources,
             ["enemy_health"] = enemytv.health / maxHealth,
@@ -275,7 +276,6 @@ public class RLAgent : MonoBehaviour
         {
             float change = (_enemyTowerHealth - enemytv.health) / 3f;
             reward += change;
-            rewardLogger.Log(step, "Enemy tower health reduced", change);
         }
         if (enemytv.health < 0.75f * tv.initialHealth && !_towerBonusGiven)
         {

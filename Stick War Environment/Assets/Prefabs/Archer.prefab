@@ -532,7 +532,6 @@ MonoBehaviour:
   healthBar: {fileID: 1407608755404963120}
   moveSpeed: 10
   health: 60
-  maxHealth: 60
   targetLocation: {x: 0, y: 0}
   flip: 0
   alive: 0
@@ -551,7 +550,7 @@ MonoBehaviour:
   isAttacking: 0
   isCoroutineRunning: 0
   reachedDefendMaxPos: 0
-  arrowSpeed: 20.2
+  arrowSpeed: 40
   arrowPrefab: {fileID: 3383051118205215007, guid: bd6fdb55ac3a06b48a74690a53da4248, type: 3}
   shootPoint: {fileID: 388934825185036642}
   index: 0

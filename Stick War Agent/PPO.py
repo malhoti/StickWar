@@ -4,7 +4,6 @@ import torch.nn as nn
 class PPO(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(PPO, self).__init__()
-        # Common network
         self.fc1 = nn.Linear(input_dim, 128)
         self.fc2 = nn.Linear(128, 64)
         # Actor head: outputs logits for each action
@@ -16,5 +15,5 @@ class PPO(nn.Module):
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
         policy_logits = self.policy_head(x) # raw action score, polocy then being the probability of choosing that action
-        value = self.value_head(x) # etemiated score of the state
+        value = self.value_head(x) # estemated score of the state
         return policy_logits, value
