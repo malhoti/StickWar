@@ -17,3 +17,7 @@ change the apporopraite model paths in the server.py and run it
 and in unity scene under global variables, enable rl connection
 under each team enable the rl agents components and select if you want them under eval mode or train mode
 you can also specifiy if you want dqn or ppo with model type
+
+
+# Note
+all assets used were from https://opengameart.org/
